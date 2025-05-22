@@ -4,21 +4,19 @@ import { sessions } from '../services/api';
 import { commonStyles } from '../styles/theme';
 import { useRealtimeUpdates } from '../hooks/useRealtimeUpdates';
 import Badge from '../components/Badge';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
-function Dashboard() {
+const Dashboard = () => {
   const { user } = useAuth();
-  const [timeframe, setTimeframe] = useState('weekly');
+  const navigate = useNavigate();
+  const [timeframe, setTimeframe] = useState('week');
 
   // Fetch user stats with real-time updates
   const { data: stats, loading: statsLoading, error: statsError, refetch: refetchStats } = useRealtimeUpdates(
-    {
-      totalSessions: 0,
-      totalDuration: 0,
-      averageDuration: 0
-    },
-    () => sessions.getStats(),
-    60000 // Update every 60 seconds
+    null,
+    () => sessions.getStats(timeframe),
+    30000
   );
 
   // Fetch leaderboard with real-time updates
@@ -51,15 +49,16 @@ function Dashboard() {
 
   const getTimeframeLabel = (tf) => {
     switch (tf) {
-      case 'daily':
-        return 'Today';
-      case 'weekly':
-        return 'This Week';
-      case 'monthly':
-        return 'This Month';
-      default:
-        return 'Today';
+      case 'day': return 'Today';
+      case 'week': return 'This Week';
+      case 'month': return 'This Month';
+      case 'all': return 'All Time';
+      default: return tf;
     }
+  };
+
+  const handleTimeframeChange = (newTimeframe) => {
+    setTimeframe(newTimeframe);
   };
 
   if (!user) {
@@ -76,161 +75,116 @@ function Dashboard() {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background p-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-surface rounded w-1/4"></div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-32 bg-surface rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background p-8">
+        <div className="text-error">
+          Error loading dashboard: {error}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#121212] text-white p-4 sm:p-8">
+    <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Quick Stats */}
-          <div className="lg:col-span-2 space-y-8">
-            <div className={commonStyles.card}>
-              <div className="flex justify-between items-center mb-6">
-                <h2 className={`${commonStyles.heading.h3}`}>
-                  Quick Stats
-                </h2>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-white">
+            Welcome back, {user.username}!
+          </h1>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg shadow-glow"
+            onClick={() => navigate('/log-session')}
+          >
+            Log New Session
+          </motion.button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-surface p-6 rounded-lg shadow-lg">
+            <h3 className="text-lg font-semibold text-white mb-2">Total Sessions</h3>
+            <p className="text-3xl font-bold text-primary">{stats?.totalSessions || 0}</p>
+          </div>
+          <div className="bg-surface p-6 rounded-lg shadow-lg">
+            <h3 className="text-lg font-semibold text-white mb-2">Total Time</h3>
+            <p className="text-3xl font-bold text-secondary">
+              {Math.round(stats?.totalTime / 60) || 0} hours
+            </p>
+          </div>
+          <div className="bg-surface p-6 rounded-lg shadow-lg">
+            <h3 className="text-lg font-semibold text-white mb-2">Average Duration</h3>
+            <p className="text-3xl font-bold text-accent">
+              {Math.round(stats?.averageDuration / 60) || 0} min
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-surface p-6 rounded-lg shadow-lg">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-white">Recent Activity</h2>
+            <div className="flex space-x-2">
+              {['day', 'week', 'month', 'all'].map((tf) => (
                 <button
-                  onClick={() => refetchStats()}
-                  className="text-sm text-primary hover:text-primary/80 transition-colors"
+                  key={tf}
+                  onClick={() => handleTimeframeChange(tf)}
+                  className={`px-3 py-1 rounded ${
+                    timeframe === tf
+                      ? 'bg-primary text-white'
+                      : 'bg-surface-light text-gray-400 hover:text-white'
+                  }`}
                 >
-                  Refresh Stats
+                  {getTimeframeLabel(tf)}
                 </button>
-              </div>
-              {statsLoading ? (
-                <div className="flex justify-center items-center h-32">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
-              ) : statsError ? (
-                <div className="bg-red-500/20 border border-red-500 text-red-200 p-4 rounded-xl">
-                  {statsError}
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="bg-gray-800/50 p-4 rounded-xl">
-                    <p className="text-gray-400">Total Sessions</p>
-                    <p className="text-2xl font-bold">{stats.totalSessions}</p>
-                  </div>
-                  <div className="bg-gray-800/50 p-4 rounded-xl">
-                    <p className="text-gray-400">Total Duration</p>
-                    <p className="text-2xl font-bold">{stats.totalDuration} min</p>
-                  </div>
-                  <div className="bg-gray-800/50 p-4 rounded-xl">
-                    <p className="text-gray-400">Average Duration</p>
-                    <p className="text-2xl font-bold">{Math.round(stats.averageDuration)} min</p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Recent Activity */}
-            <div className={commonStyles.card}>
-              <h2 className={`${commonStyles.heading.h3} mb-6`}>
-                Recent Activity
-              </h2>
-              {leaderboardLoading ? (
-                <div className="flex justify-center items-center h-32">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
-              ) : leaderboardError ? (
-                <div className="bg-red-500/20 border border-red-500 text-red-200 p-4 rounded-xl">
-                  {leaderboardError}
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {leaderboard?.slice(0, 5).map((user, index) => (
-                    <div
-                      key={user._id}
-                      className="bg-gray-800/50 p-4 rounded-xl border border-gray-700 hover:border-primary/30 transition-all duration-300"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center font-bold">
-                            {index + 1}
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <h3 className="text-lg font-semibold">
-                              {user.username}
-                            </h3>
-                            <Badge type={getBadgeForRank(index)} size="sm" />
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-gray-400">
-                            {user.totalDuration} minutes
-                          </p>
-                          <p className="text-sm text-gray-400">
-                            {user.sessionCount} sessions
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              ))}
             </div>
           </div>
-
-          {/* Sidebar */}
-          <div className="space-y-8">
-            {/* User Rank */}
-            <div className={commonStyles.card}>
-              <h2 className={`${commonStyles.heading.h3} mb-6`}>
-                Your Rank
-              </h2>
-              {leaderboardLoading ? (
-                <div className="flex justify-center items-center h-32">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
-              ) : leaderboardError ? (
-                <div className="bg-red-500/20 border border-red-500 text-red-200 p-4 rounded-xl">
-                  {leaderboardError}
-                </div>
-              ) : (
-                <div className="text-center">
-                  {userRank >= 0 ? (
-                    <>
-                      <div className="text-4xl font-bold mb-2">#{userRank + 1}</div>
-                      <p className="text-gray-400 mb-4">
-                        out of {leaderboard?.length} users
-                      </p>
-                      {userRank < 3 && (
-                        <div className="flex justify-center">
-                          <Badge type={getBadgeForRank(userRank)} size="lg" />
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <p className="text-gray-400">
-                      Start logging sessions to get ranked!
+          {stats?.recentSessions?.length > 0 ? (
+            <div className="space-y-4">
+              {stats.recentSessions.map((session) => (
+                <div
+                  key={session.id}
+                  className="flex items-center justify-between p-4 bg-surface-light rounded-lg"
+                >
+                  <div>
+                    <p className="text-white font-medium">
+                      {new Date(session.startTime).toLocaleDateString()}
                     </p>
-                  )}
+                    <p className="text-gray-400">
+                      Duration: {Math.round(session.duration / 60)} minutes
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {session.badges?.map((badge) => (
+                      <Badge key={badge} type={badge} size="sm" />
+                    ))}
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
-
-            {/* Quick Actions */}
-            <div className={commonStyles.card}>
-              <h2 className={`${commonStyles.heading.h3} mb-6`}>
-                Quick Actions
-              </h2>
-              <div className="space-y-4">
-                <Link
-                  to="/log-session"
-                  className={`${commonStyles.button.primary} block text-center`}
-                >
-                  Log New Session
-                </Link>
-                <Link
-                  to="/my-stats"
-                  className={`${commonStyles.button.secondary} block text-center`}
-                >
-                  View Detailed Stats
-                </Link>
-              </div>
-            </div>
-          </div>
+          ) : (
+            <p className="text-gray-400 text-center py-4">No sessions logged yet</p>
+          )}
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default Dashboard; 
