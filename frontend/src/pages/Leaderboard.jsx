@@ -1,27 +1,23 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useRealtimeUpdates } from '../hooks/useRealtimeUpdates';
-import { leaderboard as leaderboardApi } from '../services/api';
-import { Badge } from '../components/Badge';
+import { sessions } from '../services/api';
+import Badge from '../components/Badge';
 import { motion } from 'framer-motion';
-import { commonStyles } from '../styles/theme';
 
 const Leaderboard = () => {
   const { user } = useAuth();
   const [timeframe, setTimeframe] = useState('week');
-  const [userRank, setUserRank] = useState(-1);
 
   const fetchLeaderboard = useCallback(async () => {
     try {
-      const data = await leaderboardApi.get(timeframe);
-      const rank = data.findIndex(entry => entry.userId === user.id);
-      setUserRank(rank);
+      const data = await sessions.getLeaderboard(timeframe);
       return data;
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
       throw error;
     }
-  }, [timeframe, user.id]);
+  }, [timeframe]);
 
   const { data: leaderboard, loading, error } = useRealtimeUpdates(
     [],
@@ -71,7 +67,7 @@ const Leaderboard = () => {
     return (
       <div className="min-h-screen bg-background p-8">
         <div className="text-error">
-          Error loading leaderboard: {error}
+          Error loading leaderboard: {error && error.message ? error.message : String(error)}
         </div>
       </div>
     );

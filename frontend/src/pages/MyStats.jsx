@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { sessions } from '../services/api';
-import { useAuth } from '../context/AuthContext';
 import { commonStyles } from '../styles/theme';
 
 // Cache configuration
@@ -13,7 +12,6 @@ function MyStats() {
   const [recentSessions, setRecentSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { user } = useAuth();
   const [lastFetchTime, setLastFetchTime] = useState(0);
   const [isFetching, setIsFetching] = useState(false);
 

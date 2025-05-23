@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: goon-squad-backend
+    env: node
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false 

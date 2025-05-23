@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 
 function Profile() {
   const { user } = useAuth();
-  const [timeframe, setTimeframe] = useState('weekly');
+  const timeframe = 'weekly';  // Since we're not using setTimeframe, we can just use a constant
 
   // Fetch user stats with real-time updates
   const { data: stats, loading: statsLoading, error: statsError, refetch: refetchStats } = useRealtimeUpdates(

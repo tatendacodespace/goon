@@ -75,7 +75,7 @@ const Dashboard = () => {
     );
   }
 
-  if (loading) {
+  if (statsLoading || leaderboardLoading) {
     return (
       <div className="min-h-screen bg-background p-8">
         <div className="animate-pulse space-y-4">
@@ -90,11 +90,16 @@ const Dashboard = () => {
     );
   }
 
-  if (error) {
+  if (statsError || leaderboardError) {
     return (
       <div className="min-h-screen bg-background p-8">
         <div className="text-error">
-          Error loading dashboard: {error}
+          {statsError && (
+            <div>Error loading stats: {statsError && statsError.message ? statsError.message : String(statsError)}</div>
+          )}
+          {leaderboardError && (
+            <div>Error loading leaderboard: {leaderboardError && leaderboardError.message ? leaderboardError.message : String(leaderboardError)}</div>
+          )}
         </div>
       </div>
     );
