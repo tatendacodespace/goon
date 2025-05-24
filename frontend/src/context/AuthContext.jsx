@@ -1,123 +1,51 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth } from '../services/api';
+import React, { createContext, useContext, useState, useEffect } from "react";
 
-const AuthContext = createContext(null);
+// Create the context
+const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+// Custom hook to use the auth context
+export function useAuth() {
+  return useContext(AuthContext);
+}
+
+// Provider component
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Function to validate user data
-  const validateUserData = (userData) => {
-    if (!userData || !userData._id) {
-      console.error('Invalid user data:', userData);
-      return false;
-    }
-    return true;
-  };
-
+  // Example: Check for user in localStorage or make an API call
   useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const userData = localStorage.getItem('user');
-        
-        console.log('Initial auth check - Token:', token);
-        console.log('Initial auth check - User data:', userData);
-        
-        if (token && userData) {
-          try {
-            const parsedUser = JSON.parse(userData);
-            console.log('Parsed user data:', parsedUser);
-            
-            if (validateUserData(parsedUser)) {
-              console.log('Setting initial user:', parsedUser);
-              setUser(parsedUser);
-            } else {
-              console.log('Invalid user data, clearing storage');
-              localStorage.removeItem('user');
-              localStorage.removeItem('token');
-            }
-          } catch (error) {
-            console.error('Error parsing user data:', error);
-            localStorage.removeItem('user');
-            localStorage.removeItem('token');
-          }
-        } else {
-          console.log('No token or user data found');
-        }
-      } catch (error) {
-        console.error('Error in initializeAuth:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initializeAuth();
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
   }, []);
 
-  const login = async (username, password) => {
-    try {
-      console.log('AuthContext: Attempting login');
-      const data = await auth.login(username, password);
-      console.log('AuthContext: Login response:', data);
-      
-      if (data.token && data.user && validateUserData(data.user)) {
-        console.log('AuthContext: Storing user data:', data.user);
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        setUser(data.user);
-        return { success: true };
-      }
-      return { success: false, message: 'Invalid login response' };
-    } catch (error) {
-      console.error('AuthContext: Login error:', error);
-      return { success: false, message: error.message || 'Login failed' };
-    }
+  // Example login function
+  const login = (userData) => {
+    setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
   };
 
-  const register = async (username, password) => {
-    try {
-      console.log('AuthContext: Attempting registration');
-      const data = await auth.register(username, password);
-      console.log('AuthContext: Register response:', data);
-      
-      if (data.token && data.user && validateUserData(data.user)) {
-        console.log('AuthContext: Storing user data:', data.user);
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        setUser(data.user);
-        return { success: true };
-      }
-      return { success: false, message: 'Invalid registration response' };
-    } catch (error) {
-      console.error('AuthContext: Registration error:', error);
-      return { success: false, message: error.message || 'Registration failed' };
-    }
-  };
-
+  // Example logout function
   const logout = () => {
-    console.log('AuthContext: Logging out, clearing user data');
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
     setUser(null);
+    localStorage.removeItem("user");
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  const value = {
+    user,
+    login,
+    logout,
+    loading,
+  };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
-      {children}
+    <AuthContext.Provider value={value}>
+      {!loading && children}
     </AuthContext.Provider>
   );
-};
+}
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-}; 
+export default AuthContext; 

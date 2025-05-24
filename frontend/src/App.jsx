@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext.jsx';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -10,7 +10,8 @@ import LogSession from './pages/LogSession';
 import MyStats from './pages/MyStats';
 import Home from './pages/Home';
 import Navbar from './components/Navbar';
-import { useAuth } from './context/AuthContext';
+import { useAuth } from './context/AuthContext.jsx';
+import AuthContext from "./context/AuthContext.jsx";
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
