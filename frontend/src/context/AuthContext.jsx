@@ -26,6 +26,7 @@ export function AuthProvider({ children }) {
   const login = (userData) => {
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("token", userData.token); // Store the token separately
   };
 
   // Example logout function
