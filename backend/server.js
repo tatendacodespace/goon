@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const sessionsRouter = require('./routes/sessions');
+const sessionsRouter = require('./routes/sessions').router;
 
 // Load environment variables
 dotenv.config();
@@ -34,7 +34,7 @@ app.get('/api/sessions/leaderboard', (req, res, next) => {
 
 // Protected routes
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/sessions', sessionsRouter.router);
+app.use('/sessions', sessionsRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -46,4 +46,4 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-}); 
+});

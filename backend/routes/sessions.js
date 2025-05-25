@@ -98,6 +98,10 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
+// Add this route to expose the leaderboard endpoint
+router.get('/leaderboard', getLeaderboard);
+
+
 // Get all sessions for the authenticated user
 router.get('/', auth, async (req, res) => {
   try {
