@@ -44,7 +44,6 @@ function LogSession() {
       }
 
       const sessionData = {
-        user: user.id,
         duration: durationInMinutes
       };
 
