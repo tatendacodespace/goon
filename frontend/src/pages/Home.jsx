@@ -30,8 +30,8 @@ function Home() {
 
   useEffect(() => {
     fetchLeaderboard();
-    // Set up auto-refresh every 30 seconds
-    const interval = setInterval(fetchLeaderboard, 30000);
+    // Set up auto-refresh every 2 minutes (was 30 seconds)
+    const interval = setInterval(fetchLeaderboard, 120000);
     return () => clearInterval(interval);
   }, [timeframe]);
 
@@ -216,4 +216,4 @@ function Home() {
   );
 }
 
-export default Home; 
+export default Home;

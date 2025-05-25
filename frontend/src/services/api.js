@@ -4,7 +4,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const RATE_LIMIT = {
   windowMs: 60 * 1000, // 1 minute
-  maxRequests: 30 // 30 requests per minute
+  maxRequests: 200 // increased from 30 to 200
 };
 
 // Request tracking
