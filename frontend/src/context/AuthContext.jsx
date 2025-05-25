@@ -23,10 +23,14 @@ export function AuthProvider({ children }) {
   }, []);
 
   // Example login function
-  const login = (userData) => {
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
-    localStorage.setItem("token", userData.token); // Store the token separately
+  const login = async (username, password) => {
+    // Call the backend API
+    const response = await import('../services/api').then(m => m.auth.login(username, password));
+    // response should be { token, user }
+    setUser(response.user);
+    localStorage.setItem('user', JSON.stringify(response.user));
+    localStorage.setItem('token', response.token);
+    return response;
   };
 
   // Example logout function
@@ -49,4 +53,4 @@ export function AuthProvider({ children }) {
   );
 }
 
-export default AuthContext; 
+export default AuthContext;

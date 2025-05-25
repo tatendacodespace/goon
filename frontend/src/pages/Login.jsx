@@ -37,11 +37,10 @@ function Login() {
       console.log('Attempting login with:', formData);
       const result = await login(formData.username, formData.password);
       console.log('Login result:', result);
-      
-      if (result.success) {
+      if (result && result.token) {
         navigate('/dashboard');
       } else {
-        setError(result.message || 'Login failed');
+        setError(result && result.message ? result.message : 'Login failed');
       }
     } catch (err) {
       console.error('Login error:', err);
@@ -135,4 +134,4 @@ function Login() {
   );
 }
 
-export default Login; 
+export default Login;
