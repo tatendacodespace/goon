@@ -161,4 +161,4 @@ export const sessions = {
   getLeaderboard: async (timeframe = 'weekly') => {
     return makeRequest(`/sessions/leaderboard?timeframe=${timeframe}`);
   },
-}; 
+};
