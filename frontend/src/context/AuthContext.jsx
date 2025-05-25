@@ -27,6 +27,10 @@ export function AuthProvider({ children }) {
     // Call the backend API
     const response = await import('../services/api').then(m => m.auth.login(username, password));
     // response should be { token, user }
+    if (!response.token || typeof response.token !== 'string' || response.token.split('.').length !== 3) {
+      console.warn('Received invalid or malformed token:', response.token);
+      throw new Error('Login failed: Invalid token received from server.');
+    }
     setUser(response.user);
     localStorage.setItem('user', JSON.stringify(response.user));
     localStorage.setItem('token', response.token);
