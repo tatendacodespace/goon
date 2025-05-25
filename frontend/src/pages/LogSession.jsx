@@ -10,7 +10,7 @@ function LogSession() {
   const [formData, setFormData] = useState({
     duration: ''
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); //lethabo
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
