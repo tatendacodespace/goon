@@ -135,7 +135,4 @@ router.get('/stats', auth, async (req, res) => {
 });
 
 // Export both the router and the leaderboard handler
-module.exports = {
-  router,
-  getLeaderboard
-}; 
+module.exports = { router };

@@ -26,15 +26,11 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/goon', {
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('MongoDB connection error:', err));
 
-// Public routes - must be defined before protected routes
-app.get('/api/sessions/leaderboard', (req, res, next) => {
-  console.log('Public leaderboard route accessed');
-  sessionsRouter.getLeaderboard(req, res, next);
-});
+// Use /api/sessions for all session routes (including leaderboard)
+app.use('/api/sessions', sessionsRouter);
 
-// Protected routes
+// Use /api/auth for auth routes
 app.use('/api/auth', require('./routes/auth'));
-app.use('/sessions', sessionsRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
