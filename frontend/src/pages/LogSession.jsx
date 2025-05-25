@@ -28,9 +28,9 @@ function LogSession() {
 
     // Debug logs
     console.log('Current user object:', user);
-    console.log('User ID:', user?._id);
+    console.log('User ID:', user?.id);
 
-    if (!user?._id) {
+    if (!user?.id) {
       setError('User not authenticated. Please log in again.');
       setLoading(false);
       return;
@@ -44,7 +44,7 @@ function LogSession() {
       }
 
       const sessionData = {
-        user: user._id,
+        user: user.id,
         duration: durationInMinutes
       };
 
@@ -114,4 +114,4 @@ function LogSession() {
   );
 }
 
-export default LogSession; 
+export default LogSession;
