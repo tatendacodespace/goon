@@ -20,5 +20,6 @@ module.exports = function(req, res, next) {
   } catch (err) {
     console.warn('Token verification failed:', err.message);
     res.status(401).json({ message: 'Token is not valid' });
+    //jh
   }
 };
