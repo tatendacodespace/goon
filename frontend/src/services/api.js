@@ -71,11 +71,18 @@ const setCachedData = (key, data) => {
 };
 
 // Helper function to make API requests with caching and rate limiting
-const makeRequest = async (endpoint, options = {}, useCache = true) => {
+const makeRequest = async (endpoint, options = {}, requireAuth = true) => {
+  const token = localStorage.getItem('token');
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(requireAuth && token ? { Authorization: `Bearer ${token}` } : {}),
+    ...options.headers,
+  };
+  
   const cacheKey = `${endpoint}-${JSON.stringify(options)}`;
   
   // Check cache first
-  if (useCache) {
+  if (options.cache !== false) {
     const cachedData = getCachedData(cacheKey);
     if (cachedData) {
       return cachedData;
@@ -87,14 +94,15 @@ const makeRequest = async (endpoint, options = {}, useCache = true) => {
   
   try {
     const response = await fetch(`${API_URL}${endpoint}`, {
-      ...createFetchOptions(options),
+      ...options,
+      headers,
       signal: AbortSignal.timeout(10000) // 10 second timeout
     });
     
     const data = await handleResponse(response);
     
     // Cache successful responses
-    if (useCache) {
+    if (options.cache !== false) {
       setCachedData(cacheKey, data);
     }
     
@@ -147,7 +155,7 @@ export const sessions = {
     return makeRequest('/sessions', {
       method: 'POST',
       body: JSON.stringify(sessionData)
-    }, false); // Don't cache POST requests
+    }); // <-- remove the 'false' so requireAuth is true
   },
 
   getAll: async () => {
