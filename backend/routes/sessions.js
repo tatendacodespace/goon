@@ -76,6 +76,7 @@ router.post('/', auth, async (req, res) => {
   try {
     const { duration } = req.body;
     console.log('Creating session with data:', { duration });
+    console.log('req.user in session creation:', req.user); // <-- log user
 
     // Validate duration
     if (!duration || isNaN(duration) || duration <= 0) {
@@ -83,7 +84,7 @@ router.post('/', auth, async (req, res) => {
     }
 
     const session = new Session({
-      user: req.user._id,
+      user: req.user && req.user._id,
       duration: parseInt(duration),
       date: new Date() // Automatically set to current date/time
     });
