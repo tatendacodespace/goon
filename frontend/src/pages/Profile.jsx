@@ -209,6 +209,22 @@ function Profile() {
                 </Link>
               </div>
             </div>
+
+            {/* Logout button at the bottom for mobile/desktop */}
+            <div className="mt-8 flex justify-center">
+              <button
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to logout?')) {
+                    window.localStorage.removeItem('user');
+                    window.localStorage.removeItem('token');
+                    window.location.href = '/login';
+                  }
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg shadow transition-colors w-full max-w-xs"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </div>

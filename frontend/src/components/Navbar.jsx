@@ -4,13 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { commonStyles } from '../styles/theme';
 
 function Navbar() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
 
   return (
     <nav className="bg-gray-900 border-b border-gray-800">
@@ -37,18 +32,14 @@ function Navbar() {
                 >
                   Leaderboard
                 </Link>
+                {/* Profile icon only, no text, no logout */}
                 <Link
                   to="/profile"
-                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 transition-colors"
+                  aria-label="Profile"
                 >
-                  Profile
+                  <span className="text-2xl" role="img" aria-label="Profile">👤</span>
                 </Link>
-                <button
-                  onClick={handleLogout}
-                  className={`${commonStyles.button.secondary} text-sm`}
-                >
-                  Logout
-                </button>
               </>
             ) : (
               <>
@@ -73,4 +64,4 @@ function Navbar() {
   );
 }
 
-export default Navbar; 
+export default Navbar;
