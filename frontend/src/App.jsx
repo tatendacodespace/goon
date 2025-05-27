@@ -12,6 +12,7 @@ import Home from './pages/Home';
 import Navbar from './components/Navbar';
 import { useAuth } from './context/AuthContext.jsx';
 import AuthContext from "./context/AuthContext.jsx";
+import { Helmet } from 'react-helmet';
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -77,12 +78,15 @@ function AppRoutes() {
 
 function App() {
   return (
-    <Router>
+    <>
+      <Helmet>
+        <meta name="google-site-verification" content="Q3e2ONIFrPdzMGU_bAz48dGaBnPsBEGAjpMaYqDcjuQ" />
+      </Helmet>
       <AuthProvider>
         <AppRoutes />
       </AuthProvider>
-    </Router>
+    </>
   );
 }
 
-export default App; 
+export default App;
