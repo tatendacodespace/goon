@@ -1,3 +1,4 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow: 
+Allow: /
+Sitemap: http://goon-hj1n.vercel.app/sitemap.xml
