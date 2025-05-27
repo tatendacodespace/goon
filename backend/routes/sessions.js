@@ -84,7 +84,7 @@ router.post('/', auth, async (req, res) => {
     }
 
     const session = new Session({
-      user: req.user && req.user._id,
+      user: req.user.userId, // Use userId from JWT
       duration: parseInt(duration),
       date: new Date() // Automatically set to current date/time
     });
