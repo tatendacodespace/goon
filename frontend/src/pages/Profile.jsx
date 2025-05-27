@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { sessions } from '../services/api';
 import { commonStyles } from '../styles/theme';
@@ -10,6 +10,9 @@ function Profile() {
   const { user } = useAuth();
   const timeframe = 'weekly';  // Since we're not using setTimeframe, we can just use a constant
 
+  const fetchStats = useCallback(() => sessions.getStats(), []);
+  const fetchLeaderboard = useCallback(() => sessions.getLeaderboard(timeframe), [timeframe]);
+
   // Fetch user stats with real-time updates
   const { data: stats, loading: statsLoading, error: statsError, refetch: refetchStats } = useRealtimeUpdates(
     {
@@ -17,15 +20,15 @@ function Profile() {
       totalDuration: 0,
       averageDuration: 0
     },
-    () => sessions.getStats(),
-    60000 // Update every 60 seconds
+    fetchStats,
+    120000 // 2 minutes
   );
 
   // Fetch leaderboard with real-time updates
   const { data: leaderboard, loading: leaderboardLoading, error: leaderboardError, refetch: refetchLeaderboard } = useRealtimeUpdates(
     [],
-    () => sessions.getLeaderboard(timeframe),
-    60000 // Update every 60 seconds
+    fetchLeaderboard,
+    120000 // 2 minutes
   );
 
   // Force refresh when timeframe changes
@@ -204,4 +207,4 @@ function Profile() {
   );
 }
 
-export default Profile; 
+export default Profile;

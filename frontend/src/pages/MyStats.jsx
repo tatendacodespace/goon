@@ -100,11 +100,11 @@ function MyStats() {
     fetchStats();
   }, [fetchStats]);
 
-  // Auto-refresh every 5 minutes
+  // Auto-refresh every 2 minutes
   useEffect(() => {
     const interval = setInterval(() => {
       fetchStats();
-    }, CACHE_DURATION);
+    }, 120000);
 
     return () => clearInterval(interval);
   }, [fetchStats]);
@@ -297,4 +297,4 @@ function MyStats() {
   );
 }
 
-export default MyStats; 
+export default MyStats;

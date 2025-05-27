@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { sessions } from '../services/api';
 import { commonStyles } from '../styles/theme';
@@ -12,18 +12,21 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [timeframe, setTimeframe] = useState('week');
 
+  const fetchStats = useCallback(() => sessions.getStats(timeframe), [timeframe]);
+  const fetchLeaderboard = useCallback(() => sessions.getLeaderboard(timeframe), [timeframe]);
+
   // Fetch user stats with real-time updates
   const { data: stats, loading: statsLoading, error: statsError, refetch: refetchStats } = useRealtimeUpdates(
     null,
-    () => sessions.getStats(timeframe),
-    30000
+    fetchStats,
+    120000 // 2 minutes
   );
 
   // Fetch leaderboard with real-time updates
   const { data: leaderboard, loading: leaderboardLoading, error: leaderboardError, refetch: refetchLeaderboard } = useRealtimeUpdates(
     [],
-    () => sessions.getLeaderboard(timeframe),
-    60000 // Update every 60 seconds
+    fetchLeaderboard,
+    120000 // 2 minutes
   );
 
   // Force refresh when timeframe changes
@@ -192,4 +195,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard; 
+export default Dashboard;

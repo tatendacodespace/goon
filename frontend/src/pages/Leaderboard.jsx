@@ -22,7 +22,7 @@ const Leaderboard = () => {
   const { data: leaderboard, loading, error } = useRealtimeUpdates(
     [],
     fetchLeaderboard,
-    30000
+    120000 // 2 minutes
   );
 
   const getBadgeForRank = (rank) => {
@@ -135,4 +135,4 @@ const Leaderboard = () => {
   );
 };
 
-export default Leaderboard; 
+export default Leaderboard;
