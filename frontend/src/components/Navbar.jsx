@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { commonStyles } from '../styles/theme';
+import { FaUserCircle } from 'react-icons/fa';
 
 function Navbar() {
   const { user } = useAuth();
@@ -32,14 +33,13 @@ function Navbar() {
                 >
                   Leaderboard
                 </Link>
-                {/* Profile icon only, no text, no logout */}
-                <Link
-                  to="/profile"
-                  className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 transition-colors"
+                <button
+                  onClick={() => navigate('/profile')}
+                  className="text-gray-300 hover:text-white px-3 py-2 rounded-full text-2xl flex items-center"
                   aria-label="Profile"
                 >
-                  <span className="text-2xl" role="img" aria-label="Profile">👤</span>
-                </Link>
+                  <FaUserCircle />
+                </button>
               </>
             ) : (
               <>

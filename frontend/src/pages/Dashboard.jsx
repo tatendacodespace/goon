@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { sessions } from '../services/api';
 import { commonStyles } from '../styles/theme';
-import { useRealtimeUpdates } from '../hooks/useRealtimeUpdates';
+import { useRealtimeUpdates } from './hooks/useRealtimeUpdates';
 import Badge from '../components/Badge';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
