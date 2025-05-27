@@ -106,7 +106,8 @@ router.get('/leaderboard', getLeaderboard);
 // Get all sessions for the authenticated user
 router.get('/', auth, async (req, res) => {
   try {
-    const sessions = await Session.find({ user: req.user._id })
+    const userId = req.user._id || req.user.userId;
+    const sessions = await Session.find({ user: userId })
       .sort({ date: -1 });
     res.json(sessions);
   } catch (error) {
@@ -117,9 +118,10 @@ router.get('/', auth, async (req, res) => {
 // Get session statistics
 router.get('/stats', auth, async (req, res) => {
   try {
-    const totalSessions = await Session.countDocuments({ user: req.user._id });
+    const userId = req.user._id || req.user.userId;
+    const totalSessions = await Session.countDocuments({ user: userId });
     const totalDuration = await Session.aggregate([
-      { $match: { user: req.user._id } },
+      { $match: { user: userId } },
       { $group: { _id: null, total: { $sum: '$duration' } } }
     ]);
 
