@@ -49,7 +49,8 @@ function LogSession() {
 
       console.log('Creating session with data:', sessionData);
       await sessions.create(sessionData);
-      navigate('/dashboard');
+      // Pass a state flag to signal a session was just logged
+      navigate('/dashboard', { state: { sessionLogged: true } });
     } catch (err) {
       console.error('Session creation error:', err);
       setError(err.message || 'Failed to create session');

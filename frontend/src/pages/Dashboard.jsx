@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = window.location;
   const [timeframe, setTimeframe] = useState('week');
 
   const fetchStats = useCallback(() => sessions.getStats(timeframe), [timeframe]);
@@ -28,6 +29,16 @@ const Dashboard = () => {
     fetchLeaderboard,
     120000 // 2 minutes
   );
+
+  // Refetch immediately if navigated from LogSession
+  useEffect(() => {
+    if (window.history.state && window.history.state.usr && window.history.state.usr.sessionLogged) {
+      refetchStats();
+      refetchLeaderboard();
+      // Remove the flag so it doesn't refetch again on next mount
+      window.history.replaceState({ ...window.history.state, usr: { ...window.history.state.usr, sessionLogged: false } }, '');
+    }
+  }, [refetchStats, refetchLeaderboard]);
 
   // Force refresh when timeframe changes
   useEffect(() => {

@@ -31,6 +31,15 @@ function Profile() {
     120000 // 2 minutes
   );
 
+  // Refetch immediately if navigated from LogSession
+  useEffect(() => {
+    if (window.history.state && window.history.state.usr && window.history.state.usr.sessionLogged) {
+      refetchStats();
+      refetchLeaderboard();
+      window.history.replaceState({ ...window.history.state, usr: { ...window.history.state.usr, sessionLogged: false } }, '');
+    }
+  }, [refetchStats, refetchLeaderboard]);
+
   // Force refresh when timeframe changes
   useEffect(() => {
     refetchLeaderboard();
