@@ -11,7 +11,19 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: 'https://goon-hj1n.vercel.app',
+  origin: function (origin, callback) {
+    // Allow localhost, production, and any vercel.app preview URL
+    const allowedOrigins = [
+      'https://goon-hj1n.vercel.app',
+      'http://localhost:5173',
+      'http://localhost:3000'
+    ];
+    if (!origin || allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
