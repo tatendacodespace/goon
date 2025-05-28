@@ -98,12 +98,12 @@ const Leaderboard = () => {
         <div className="space-y-4">
           {leaderboard?.map((entry, index) => (
             <motion.div
-              key={entry.userId}
+              key={entry._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
               className={`bg-surface p-4 rounded-lg shadow-lg ${
-                entry.userId === user.id ? 'ring-2 ring-primary' : ''
+                entry._id === user?._id ? 'ring-2 ring-primary' : ''
               }`}
             >
               <div className="flex items-center justify-between">
@@ -120,7 +120,7 @@ const Leaderboard = () => {
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-gray-400">
-                    {Math.round(entry.totalTime / 60)} hours
+                    {Math.round(entry.totalDuration / 60)} hours
                   </p>
                   <p className="text-sm text-gray-400">
                     {entry.sessionCount} sessions
