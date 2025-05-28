@@ -137,7 +137,7 @@ function MyStats() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#121212] text-white p-4 sm:p-8">
+      <div className="min-h-screen bg-background text-white p-4 sm:p-8 font-mono">
         <div className="max-w-7xl mx-auto">
           <h1 className={`${commonStyles.heading.h1} text-center`}>
             📊 My Stats
@@ -152,7 +152,7 @@ function MyStats() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#121212] text-white p-4 sm:p-8">
+      <div className="min-h-screen bg-background text-white p-4 sm:p-8 font-mono">
         <div className="max-w-7xl mx-auto">
           <h1 className={`${commonStyles.heading.h1} text-center`}>
             📊 My Stats
@@ -166,7 +166,7 @@ function MyStats() {
   }
 
   return (
-    <div className="min-h-screen bg-[#121212] text-white p-4 sm:p-8">
+    <div className="min-h-screen bg-background text-white p-4 sm:p-8 font-mono">
       <div className="max-w-7xl mx-auto">
         <h1 className={`${commonStyles.heading.h1} text-center`}>
           📊 My Stats

@@ -103,7 +103,7 @@ function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-[#121212] text-white p-4 sm:p-8">
+    <div className="min-h-screen bg-background text-white p-4 sm:p-8 font-mono">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Profile Info */}
