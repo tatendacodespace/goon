@@ -2,31 +2,31 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>http://goon-hj1n.vercel.app/</loc>
-    <lastmod>2025-05-27</lastmod>
+    <lastmod>2025-05-28</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>http://goon-hj1n.vercel.app/leaderboard</loc>
-    <lastmod>2025-05-27</lastmod>
+    <lastmod>2025-05-28</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>http://goon-hj1n.vercel.app/profile</loc>
-    <lastmod>2025-05-27</lastmod>
+    <lastmod>2025-05-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>http://goon-hj1n.vercel.app/login</loc>
-    <lastmod>2025-05-27</lastmod>
+    <lastmod>2025-05-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>http://goon-hj1n.vercel.app/register</loc>
-    <lastmod>2025-05-27</lastmod>
+    <lastmod>2025-05-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
