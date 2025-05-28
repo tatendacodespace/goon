@@ -1,61 +1,76 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { commonStyles } from '../styles/theme';
 import { sessions } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import RetroTimer from '../components/RetroTimer';
 
 function LogSession() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [formData, setFormData] = useState({
-    duration: ''
-  });
-  const [loading, setLoading] = useState(false); //lethabo
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [seconds, setSeconds] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const timerRef = useRef(null);
+  const MAX_SECONDS = 120 * 60; // 120 minutes
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  // Warn on reload/close if timer is running
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (timerRunning) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [timerRunning]);
+
+  // Timer logic
+  useEffect(() => {
+    if (timerRunning) {
+      timerRef.current = setInterval(() => {
+        setSeconds((s) => {
+          if (s + 1 >= MAX_SECONDS) {
+            handleStop(true); // auto-stop
+            return MAX_SECONDS;
+          }
+          return s + 1;
+        });
+      }, 1000);
+    } else if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    return () => clearInterval(timerRef.current);
+    // eslint-disable-next-line
+  }, [timerRunning]);
+
+  const handleStart = () => {
+    setError('');
+    setSeconds(0);
+    setTimerRunning(true);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    // Debug logs
-    console.log('Current user object:', user);
-    console.log('User ID:', user?.id);
-
-    if (!user?.id) {
-      setError('User not authenticated. Please log in again.');
-      setLoading(false);
+  const handleStop = async (auto = false) => {
+    setTimerRunning(false);
+    if (seconds < 60 && !auto) {
+      setError('Session must be at least 1 minute.');
       return;
     }
-
+    setLoading(true);
+    setError('');
     try {
-      // Convert duration to minutes
-      const durationInMinutes = parseInt(formData.duration);
-      if (isNaN(durationInMinutes) || durationInMinutes <= 0) {
-        throw new Error('Please enter a valid duration');
-      }
-
-      const sessionData = {
-        duration: durationInMinutes
-      };
-
-      console.log('Creating session with data:', sessionData);
-      await sessions.create(sessionData);
-      // Pass a state flag to signal a session was just logged
+      if (!user?.id) throw new Error('User not authenticated. Please log in again.');
+      const durationInMinutes = Math.floor(seconds / 60);
+      if (durationInMinutes <= 0) throw new Error('Session must be at least 1 minute.');
+      await sessions.create({ duration: durationInMinutes });
       navigate('/dashboard', { state: { sessionLogged: true } });
     } catch (err) {
-      console.error('Session creation error:', err);
       setError(err.message || 'Failed to create session');
     } finally {
       setLoading(false);
+      setSeconds(0);
     }
   };
 
@@ -66,48 +81,34 @@ function LogSession() {
           <h1 className={commonStyles.heading.h1}>Log New Session</h1>
           <p className="text-text-secondary">Record your progress</p>
         </div>
-
-        <div className={commonStyles.card}>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-text-secondary">
-                Duration (minutes)
-              </label>
-              <input
-                type="number"
-                name="duration"
-                className={commonStyles.input}
-                required
-                min="1"
-                placeholder="Enter duration in minutes"
-                value={formData.duration}
-                onChange={handleChange}
-              />
-            </div>
-
-            {error && (
-              <div className="bg-error/20 border border-error text-text-primary p-4 rounded-xl">
-                {error}
-              </div>
-            )}
-
+        <div className={commonStyles.card + ' flex flex-col items-center'}>
+          {!timerRunning && (
             <button
-              type="submit"
+              onClick={handleStart}
+              className={commonStyles.button.primary + ' w-full mb-4'}
               disabled={loading}
-              className={`${commonStyles.button.primary} w-full ${
-                loading ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
             >
-              {loading ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Creating session...
-                </div>
-              ) : (
-                'Create Session'
-              )}
+              Start Goon Session
             </button>
-          </form>
+          )}
+          {timerRunning && (
+            <>
+              <RetroTimer seconds={seconds} maxSeconds={MAX_SECONDS} running={timerRunning} />
+              <button
+                onClick={() => handleStop(false)}
+                className={commonStyles.button.primary + ' w-full mt-4'}
+                disabled={loading}
+              >
+                Stop Session
+              </button>
+              <div className="text-xs text-pink-400 mt-2">Session auto-stops at 120:00</div>
+            </>
+          )}
+          {error && (
+            <div className="bg-error/20 border border-error text-text-primary p-4 rounded-xl mt-4">
+              {error}
+            </div>
+          )}
         </div>
       </div>
     </div>

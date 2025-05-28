@@ -75,6 +75,20 @@ const Dashboard = () => {
     setTimeframe(newTimeframe);
   };
 
+  // Progress bar for weekly/monthly goals
+  const progress = stats?.totalTime && stats?.goal ? Math.min(100, Math.round((stats.totalTime / stats.goal) * 100)) : 0;
+
+  // Example motivational message
+  const motivationalMessages = [
+    "Keep up the streak!",
+    "You're crushing it!",
+    "One more session to greatness!",
+    "Consistency is key!",
+    "Goon legend in the making!"
+  ];
+  const greeting = `Welcome back, ${user.username}!`;
+  const motivation = motivationalMessages[user.username.length % motivationalMessages.length];
+
   if (!user) {
     return (
       <div className="min-h-screen bg-[#121212] text-white p-4 sm:p-8">
@@ -120,34 +134,53 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="min-h-screen bg-background p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-white">
-            Welcome back, {user.username}!
-          </h1>
+        {/* Personalized Greeting & Progress */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-white flex items-center gap-2">
+              {greeting} <span className="text-2xl">😈</span>
+            </h1>
+            <p className="text-accent mt-2 text-lg">{motivation}</p>
+          </div>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg shadow-glow"
+            className="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg shadow-glow w-full md:w-auto"
             onClick={() => navigate('/log-session')}
           >
             Log New Session
           </motion.button>
         </div>
 
+        {/* Progress Bar */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-1">
+            <span className="text-gray-400 text-sm">Weekly Progress</span>
+            <span className="text-gray-400 text-sm">{progress}%</span>
+          </div>
+          <div className="w-full bg-gray-800 rounded-full h-3">
+            <div
+              className="bg-primary h-3 rounded-full transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+        </div>
+
+        {/* Main Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-surface p-6 rounded-lg shadow-lg">
+          <div className="bg-surface p-6 rounded-lg shadow-lg flex flex-col items-center">
             <h3 className="text-lg font-semibold text-white mb-2">Total Sessions</h3>
             <p className="text-3xl font-bold text-primary">{stats?.totalSessions || 0}</p>
           </div>
-          <div className="bg-surface p-6 rounded-lg shadow-lg">
+          <div className="bg-surface p-6 rounded-lg shadow-lg flex flex-col items-center">
             <h3 className="text-lg font-semibold text-white mb-2">Total Time</h3>
             <p className="text-3xl font-bold text-secondary">
               {Math.round(stats?.totalTime / 60) || 0} hours
             </p>
           </div>
-          <div className="bg-surface p-6 rounded-lg shadow-lg">
+          <div className="bg-surface p-6 rounded-lg shadow-lg flex flex-col items-center">
             <h3 className="text-lg font-semibold text-white mb-2">Average Duration</h3>
             <p className="text-3xl font-bold text-accent">
               {Math.round(stats?.averageDuration / 60) || 0} min
@@ -155,7 +188,38 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-surface p-6 rounded-lg shadow-lg">
+        {/* Badges/Achievements Section */}
+        <div className="bg-surface p-6 rounded-lg shadow-lg mb-8">
+          <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">Your Badges <span>🏅</span></h2>
+          <div className="flex flex-wrap gap-4 items-center">
+            {/* Example: Show locked/unlocked badges, styled like CoD Mobile legendary/top5k */}
+            {[0,1,2].map((rank) => (
+              <div key={rank} className={`relative flex flex-col items-center ${userRank === rank ? 'scale-110' : 'opacity-60'}`}>
+                <Badge
+                  type={getBadgeForRank(rank)}
+                  size="lg"
+                  showTooltip={true}
+                />
+                <span className={`mt-2 text-xs font-bold ${userRank === rank ? 'text-primary' : 'text-gray-500'}`}>
+                  {rank === 0 ? 'Legendary' : rank === 1 ? 'Top 5K' : 'Top 10K'}
+                </span>
+                {userRank === rank && (
+                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white px-2 py-1 rounded-full text-xs shadow-lg animate-pulse">You</span>
+                )}
+              </div>
+            ))}
+            {/* Locked badge example */}
+            {userRank > 2 && (
+              <div className="flex flex-col items-center opacity-40">
+                <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-2xl">🔒</div>
+                <span className="mt-2 text-xs font-bold text-gray-500">Locked</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Recent Activity Feed */}
+        <div className="bg-surface p-6 rounded-lg shadow-lg mb-8">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-white">Recent Activity</h2>
             <div className="flex space-x-2">
@@ -179,7 +243,7 @@ const Dashboard = () => {
               {stats.recentSessions.map((session) => (
                 <div
                   key={session.id}
-                  className="flex items-center justify-between p-4 bg-surface-light rounded-lg"
+                  className="flex items-center justify-between p-4 bg-surface-light rounded-lg border border-primary/20 hover:border-primary/60 transition-all duration-300 shadow-sm"
                 >
                   <div>
                     <p className="text-white font-medium">
@@ -194,12 +258,39 @@ const Dashboard = () => {
                       <Badge key={badge} type={badge} size="sm" />
                     ))}
                   </div>
+                  {/* Share button */}
+                  <button
+                    className="ml-4 px-3 py-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-full text-xs font-semibold shadow hover:scale-105 transition"
+                    onClick={() => navigator.share && navigator.share({
+                      title: 'Check out my goon session!',
+                      text: `I just logged a ${Math.round(session.duration / 60)} min session on Goon Leaderboard!`,
+                      url: window.location.href
+                    })}
+                  >
+                    Share
+                  </button>
                 </div>
               ))}
             </div>
           ) : (
             <p className="text-gray-400 text-center py-4">No sessions logged yet</p>
           )}
+        </div>
+
+        {/* Quick Actions */}
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <Link
+            to="/leaderboard"
+            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white text-center py-4 rounded-lg font-bold text-lg shadow-lg hover:scale-105 transition"
+          >
+            View Leaderboard
+          </Link>
+          <Link
+            to="/my-stats"
+            className="flex-1 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 text-center py-4 rounded-lg font-bold text-lg shadow-lg hover:scale-105 transition"
+          >
+            View My Stats
+          </Link>
         </div>
       </div>
     </div>

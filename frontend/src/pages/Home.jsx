@@ -69,7 +69,7 @@ function Home() {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className={`${commonStyles.heading.h1} mb-6`}>
-            Welcome to Goon Leaderboard 🚀
+            Welcome to Goon Leaderboard <span className="text-4xl align-middle">😈</span>
           </h1>
           <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
             Track your progress, compete with others, and become the ultimate goon master!
@@ -139,28 +139,27 @@ function Home() {
                 {topGooners.map((user, index) => (
                   <div
                     key={user._id}
-                    className="bg-gray-800/50 p-4 rounded-xl border border-gray-700 hover:border-primary/30 transition-all duration-300"
+                    className={`bg-gray-800/50 p-4 rounded-xl border border-gray-700 hover:border-primary/30 transition-all duration-300 flex items-center justify-between ${index === 0 ? 'ring-4 ring-yellow-400' : index === 1 ? 'ring-2 ring-purple-500' : index === 2 ? 'ring-2 ring-blue-400' : ''}`}
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center font-bold">
-                          {index + 1}
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <h3 className="text-lg font-semibold">
-                            {user.username}
-                          </h3>
-                          <Badge type={getBadgeForRank(index)} size="sm" />
-                        </div>
+                    <div className="flex items-center space-x-4">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${index === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-900 shadow-lg' : index === 1 ? 'bg-gradient-to-r from-purple-400 to-purple-700 text-purple-100 shadow-md' : index === 2 ? 'bg-gradient-to-r from-blue-400 to-blue-700 text-blue-100 shadow-md' : 'bg-gray-700 text-gray-300'}`}>{index + 1}</div>
+                      <div className="flex items-center space-x-2">
+                        <h3 className="text-lg font-semibold">
+                          {user.username}
+                        </h3>
+                        <Badge type={getBadgeForRank(index)} size="md" />
+                        {index === 0 && <span className="ml-2 px-2 py-1 bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-900 rounded-full text-xs font-bold shadow">Legendary</span>}
+                        {index === 1 && <span className="ml-2 px-2 py-1 bg-gradient-to-r from-purple-400 to-purple-700 text-purple-100 rounded-full text-xs font-bold shadow">Top 5K</span>}
+                        {index === 2 && <span className="ml-2 px-2 py-1 bg-gradient-to-r from-blue-400 to-blue-700 text-blue-100 rounded-full text-xs font-bold shadow">Top 10K</span>}
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm text-gray-400">
-                          {user.totalDuration} minutes
-                        </p>
-                        <p className="text-sm text-gray-400">
-                          Avg: {Math.round(user.totalDuration / user.sessionCount)} min
-                        </p>
-                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-400">
+                        {user.totalDuration} minutes
+                      </p>
+                      <p className="text-sm text-gray-400">
+                        Avg: {Math.round(user.totalDuration / user.sessionCount)} min
+                      </p>
                     </div>
                   </div>
                 ))}
