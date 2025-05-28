@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext.jsx';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -78,14 +78,13 @@ function AppRoutes() {
 
 function App() {
   return (
-    <>
-      <Helmet>
-        <meta name="google-site-verification" content="Q3e2ONIFrPdzMGU_bAz48dGaBnPsBEGAjpMaYqDcjuQ" />
-      </Helmet>
+    <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
+        <div className="min-h-screen bg-[#121212]">
+          <AppRoutes />
+        </div>
       </AuthProvider>
-    </>
+    </BrowserRouter>
   );
 }
 
