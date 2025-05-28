@@ -133,6 +133,16 @@ const Dashboard = () => {
     );
   }
 
+  if (leaderboard?.length === 0) {
+    return (
+      <div className="min-h-screen bg-background p-8">
+        <div className="text-center py-8 text-gray-400">
+          No leaderboard data available for this timeframe
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">

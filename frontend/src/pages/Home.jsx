@@ -138,7 +138,7 @@ function Home() {
               <div className="space-y-4">
                 {topGooners.map((user, index) => (
                   <div
-                    key={user._id}
+                    key={user?._id || index}
                     className={`bg-gray-800/50 p-4 rounded-xl border border-gray-700 hover:border-primary/30 transition-all duration-300 flex items-center justify-between ${index === 0 ? 'ring-4 ring-yellow-400' : index === 1 ? 'ring-2 ring-purple-500' : index === 2 ? 'ring-2 ring-blue-400' : ''}`}
                   >
                     <div className="flex items-center space-x-4">
@@ -158,7 +158,7 @@ function Home() {
                         {user.totalDuration} minutes
                       </p>
                       <p className="text-sm text-gray-400">
-                        Avg: {Math.round(user.totalDuration / user.sessionCount)} min
+                        Avg: {user.sessionCount ? Math.round(user.totalDuration / user.sessionCount) : 0} min
                       </p>
                     </div>
                   </div>

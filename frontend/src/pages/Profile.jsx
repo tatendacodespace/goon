@@ -88,6 +88,20 @@ function Profile() {
     );
   }
 
+  if (leaderboard?.length === 0) {
+    return (
+      <div className="min-h-screen bg-[#121212] text-white p-4 sm:p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className={commonStyles.card}>
+            <h2 className="text-center text-gray-400 py-8">
+              No leaderboard data available for this timeframe
+            </h2>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#121212] text-white p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
