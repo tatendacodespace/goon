@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { sessions } from '../services/api';
 import { commonStyles } from '../styles/theme';
-import { useNotification } from '../components/NotificationProvider';
-import notificationSound from '../assets/notification.mp3';
 import { useNavigate } from 'react-router-dom';
 
 // Cache configuration
@@ -17,7 +15,6 @@ function MyStats() {
   const [error, setError] = useState('');
   const [lastFetchTime, setLastFetchTime] = useState(0);
   const [isFetching, setIsFetching] = useState(false);
-  const { notify } = useNotification();
   const navigate = useNavigate();
 
   // Memoized fetch function with retry logic
@@ -101,20 +98,6 @@ function MyStats() {
 
     return () => clearInterval(interval);
   }, [fetchStats]);
-
-  useEffect(() => {
-    if (!loading && stats && stats.sessionCount > 0) {
-      notify('Stats updated!', 'success');
-      // Only play sound if not already playing
-      if (typeof window !== 'undefined' && window.Audio) {
-        try {
-          const audio = new Audio(notificationSound);
-          audio.play().catch(() => {});
-        } catch (e) {}
-      }
-      if (window.navigator.vibrate) window.navigator.vibrate(50);
-    }
-  }, [stats, loading, notify]);
 
   const getStatEmoji = (stat) => {
     const emojis = {

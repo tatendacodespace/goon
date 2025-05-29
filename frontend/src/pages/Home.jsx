@@ -161,9 +161,7 @@ function Home() {
                             {user.username}
                           </h3>
                           <Badge type={getBadgeForRank(index)} size="md" />
-                          {index === 0 && <span className="ml-2 px-2 py-1 bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-900 rounded-full text-xs font-bold shadow">Legendary</span>}
-                          {index === 1 && <span className="ml-2 px-2 py-1 bg-gradient-to-r from-purple-400 to-purple-700 text-purple-100 rounded-full text-xs font-bold shadow">Top 5K</span>}
-                          {index === 2 && <span className="ml-2 px-2 py-1 bg-gradient-to-r from-blue-400 to-blue-700 text-blue-100 rounded-full text-xs font-bold shadow">Top 10K</span>}
+                          {/* Removed: Legendary, Top 5K, Top 10K labels */}
                         </div>
                       </div>
                       <div className="text-right">
