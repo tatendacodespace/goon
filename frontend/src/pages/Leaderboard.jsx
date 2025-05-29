@@ -73,6 +73,11 @@ const Leaderboard = () => {
   const totalPages = Math.ceil(leaderboardData.total / leaderboardData.limit);
   const userNotOnPage = leaderboardData.user && (leaderboardData.userRank < (page - 1) * leaderboardData.limit + 1 || leaderboardData.userRank > page * leaderboardData.limit);
 
+  // Support new API response shape
+  const { leaderboard } = leaderboardData;
+  const leaderboardArr = Array.isArray(leaderboard) ? leaderboard : (Array.isArray(leaderboard.leaderboard) ? leaderboard.leaderboard : []);
+  const userRank = leaderboardArr.findIndex(u => String(u._id) === String(user?.id || user?._id));
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background p-8">
@@ -120,41 +125,32 @@ const Leaderboard = () => {
           </div>
         </div>
 
-        {leaderboardData.leaderboard?.length === 0 ? (
+        {leaderboardArr?.length === 0 ? (
           <div className="text-center py-8 text-gray-400">
             No gooners have logged sessions for this timeframe yet. Be the first!
           </div>
         ) : (
           <div className="space-y-4">
-            {leaderboardData.leaderboard.map((entry, index) => {
-              const globalRank = (leaderboardData.page - 1) * leaderboardData.limit + index;
-              const isUser = String(entry._id) === String(user?.id || user?._id);
-              const isTop3 = globalRank < 3;
-              return (
-                <motion.div
-                  key={entry._id || index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={`bg-surface p-4 rounded-lg shadow-lg flex items-center justify-between ${
-                    isUser ? 'ring-2 ring-primary' : ''
-                  } ${isTop3 ? 'glow-top3' : ''}`}
-                >
+            {leaderboardArr.map((entry, index) => (
+              <motion.div
+                key={entry._id || index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className={`bg-surface p-4 rounded-lg shadow-lg ${
+                  entry._id === user?.id ? 'ring-2 ring-primary' : ''
+                }`}
+              >
+                <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
-                      isTop3
-                        ? globalRank === 0
-                          ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-900 shadow-lg'
-                          : globalRank === 1
-                          ? 'bg-gradient-to-r from-purple-400 to-purple-700 text-purple-100 shadow-md'
-                          : 'bg-gradient-to-r from-blue-400 to-blue-700 text-blue-100 shadow-md'
-                        : 'bg-gradient-to-r from-primary to-secondary text-white'
-                    }`}>
-                      {globalRank + 1}
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center font-bold">
+                      {index + 1}
                     </div>
                     <div className="flex items-center space-x-2">
-                      <h3 className={`text-lg font-semibold ${isTop3 ? 'text-glow' : 'text-white'}`}>{entry.username}</h3>
-                      {isTop3 && <Badge type={getBadgeForRank(globalRank)} size="sm" />}
+                      <h3 className="text-lg font-semibold text-white">
+                        {entry.username}
+                      </h3>
+                      {index < 3 && <Badge type={getBadgeForRank(index)} size="sm" />}
                     </div>
                   </div>
                   <div className="text-right">
@@ -165,36 +161,9 @@ const Leaderboard = () => {
                       {entry.sessionCount || 0} sessions
                     </p>
                   </div>
-                </motion.div>
-              );
-            })}
-            {/* If user is not on this page, show their row at the bottom */}
-            {userNotOnPage && leaderboardData.user && (
-              <motion.div
-                key={leaderboardData.user._id + '-user'}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="bg-surface p-4 rounded-lg shadow-lg flex items-center justify-between ring-2 ring-primary mt-8"
-              >
-                <div className="flex items-center space-x-4">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold bg-gradient-to-r from-primary to-secondary text-white">
-                    {leaderboardData.userRank}
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <h3 className="text-lg font-semibold text-white">{leaderboardData.user.username}</h3>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-400">
-                    {leaderboardData.user.totalDuration ? Math.round(leaderboardData.user.totalDuration / 60) : 0} hours
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    {leaderboardData.user.sessionCount || 0} sessions
-                  </p>
                 </div>
               </motion.div>
-            )}
+            ))}
           </div>
         )}
         {/* Pagination Controls */}

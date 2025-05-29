@@ -74,9 +74,10 @@ function Profile() {
     refetchLeaderboard();
   }, [timeframe, refetchLeaderboard]);
 
-  // Get user's rank from leaderboard
-  const userRank = leaderboard?.findIndex(u => String(u._id) === String(user.id));
-  const isRanked = userRank !== undefined && userRank !== -1 && userRank < leaderboard.length;
+  // Support new API response shape
+  const leaderboardArr = Array.isArray(leaderboard) ? leaderboard : (Array.isArray(leaderboard.leaderboard) ? leaderboard.leaderboard : []);
+  const userRank = leaderboardArr.findIndex(u => String(u._id) === String(user.id));
+  const isRanked = userRank !== undefined && userRank !== -1 && userRank < leaderboardArr.length;
 
   const getBadgeForRank = (index) => {
     switch (index) {

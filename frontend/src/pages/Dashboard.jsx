@@ -80,7 +80,8 @@ const Dashboard = () => {
   }, [timeframe, refetchLeaderboard]);
 
   // Get user's rank from leaderboard
-  const userRank = leaderboard?.findIndex(u => String(u._id) === String(user.id)) ?? -1;
+  const leaderboardArr = Array.isArray(leaderboard) ? leaderboard : (Array.isArray(leaderboard.leaderboard) ? leaderboard.leaderboard : []);
+  const userRank = leaderboardArr.findIndex(u => String(u._id) === String(user.id)) ?? -1;
 
   const getBadgeForRank = (index) => {
     switch (index) {
@@ -287,6 +288,52 @@ const Dashboard = () => {
           >
             View My Stats
           </Link>
+        </div>
+
+        {/* Leaderboard Section - Moved Below Quick Actions */}
+        <div className="bg-surface p-6 rounded-lg shadow-lg mb-8">
+          <h2 className="text-xl font-bold text-white mb-4">Leaderboard</h2>
+          {leaderboardArr?.length === 0 ? (
+            <div className="text-center py-8 text-gray-400">
+              No leaderboard data available for this timeframe
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {leaderboardArr?.map((entry, index) => (
+                <motion.div
+                  key={entry._id || index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`bg-surface p-4 rounded-lg shadow-lg ${
+                    entry._id === user?.id ? 'ring-2 ring-primary' : ''
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center font-bold">
+                        {index + 1}
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <h3 className="text-lg font-semibold text-white">
+                          {entry.username}
+                        </h3>
+                        {index < 3 && <Badge type={getBadgeForRank(index)} size="sm" />}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-400">
+                        {entry.totalDuration ? Math.round(entry.totalDuration / 60) : 0} hours
+                      </p>
+                      <p className="text-sm text-gray-400">
+                        {entry.sessionCount || 0} sessions
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
