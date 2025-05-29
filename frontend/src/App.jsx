@@ -16,6 +16,7 @@ import { Helmet } from 'react-helmet';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Footer from './components/Footer';
+import NotificationProvider from './components/NotificationProvider';
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -85,10 +86,12 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <div className="min-h-screen bg-[#121212]">
-          <AppRoutes />
-          <Footer />
-        </div>
+        <NotificationProvider>
+          <div className="min-h-screen bg-[#121212]">
+            <AppRoutes />
+            <Footer />
+          </div>
+        </NotificationProvider>
       </AuthProvider>
     </BrowserRouter>
   );

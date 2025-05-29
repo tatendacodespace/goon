@@ -5,7 +5,7 @@ import { commonStyles } from '../styles/theme';
 import { useRealtimeUpdates } from './hooks/useRealtimeUpdates';
 import Badge from '../components/Badge';
 import { Link } from 'react-router-dom';
-import NotificationProvider, { useNotification } from '../components/NotificationProvider';
+import { useNotification } from '../components/NotificationProvider';
 import notificationSound from '../assets/notification.mp3';
 
 function Profile() {
@@ -139,157 +139,155 @@ function Profile() {
   }
 
   return (
-    <NotificationProvider>
-      <div className="min-h-screen bg-background text-white p-4 sm:p-8 font-mono">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Profile Info */}
-            <div className="lg:col-span-2 space-y-8">
-              <div className={commonStyles.card}>
-                <h2 className={`${commonStyles.heading.h3} mb-6`}>
-                  Profile Information
-                </h2>
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-2xl font-bold">
-                      {user.username[0].toUpperCase()}
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold">{user.username}</h3>
-                      <p className="text-gray-400">Member since {new Date(user.createdAt).toLocaleDateString()}</p>
-                    </div>
+    <div className="min-h-screen bg-background text-white p-4 sm:p-8 font-mono">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Profile Info */}
+          <div className="lg:col-span-2 space-y-8">
+            <div className={commonStyles.card}>
+              <h2 className={`${commonStyles.heading.h3} mb-6`}>
+                Profile Information
+              </h2>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-4">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-2xl font-bold">
+                    {user.username[0].toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold">{user.username}</h3>
+                    <p className="text-gray-400">Member since {new Date(user.createdAt).toLocaleDateString()}</p>
                   </div>
                 </div>
-              </div>
-
-              {/* Stats */}
-              <div className={commonStyles.card}>
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className={`${commonStyles.heading.h3}`}>
-                    Your Stats
-                  </h2>
-                  <button
-                    onClick={() => refetchStats()}
-                    className="text-sm text-primary hover:text-primary/80 transition-colors"
-                  >
-                    Refresh Stats
-                  </button>
-                </div>
-                {statsLoading ? (
-                  <div className="flex justify-center items-center h-32">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                  </div>
-                ) : statsError ? (
-                  <div className="bg-red-500/20 border border-red-500 text-red-200 p-4 rounded-xl">
-                    {statsError}
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="bg-gray-800/50 p-4 rounded-xl">
-                      <p className="text-gray-400">Total Sessions</p>
-                      <p className="text-2xl font-bold">{stats.totalSessions}</p>
-                    </div>
-                    <div className="bg-gray-800/50 p-4 rounded-xl">
-                      <p className="text-gray-400">Total Duration</p>
-                      <p className="text-2xl font-bold">{stats.totalDuration.toFixed(2)} min</p>
-                    </div>
-                    <div className="bg-gray-800/50 p-4 rounded-xl">
-                      <p className="text-gray-400">Average Duration</p>
-                      <p className="text-2xl font-bold">{stats.averageDuration ? stats.averageDuration.toFixed(2) : '0.00'} min</p>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 
-            {/* Sidebar */}
-            <div className="space-y-8">
-              {/* Badges */}
-              <div className={commonStyles.card}>
-                <h2 className={`${commonStyles.heading.h3} mb-6`}>
-                  Your Badges
+            {/* Stats */}
+            <div className={commonStyles.card}>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className={`${commonStyles.heading.h3}`}>
+                  Your Stats
                 </h2>
-                {leaderboardLoading ? (
-                  <div className="flex justify-center items-center h-32">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                  </div>
-                ) : leaderboardError ? (
-                  <div className="bg-red-500/20 border border-red-500 text-red-200 p-4 rounded-xl">
-                    {leaderboardError}
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {isRanked && userRank < 3 ? (
-                      <div className="text-center">
-                        <Badge type={getBadgeForRank(userRank)} size="lg" />
-                        <p className="mt-4 text-gray-400">
-                          You are currently ranked #{userRank + 1} in the {getTimeframeLabel(timeframe)} leaderboard!
-                        </p>
-                      </div>
-                    ) : isRanked ? (
-                      <div className="text-center">
-                        <p className="text-gray-400 mb-4">
-                          Keep practicing to earn badges!
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Current rank: #{userRank + 1}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="text-center">
-                        <p className="text-gray-400 mb-4">
-                          Keep practicing to earn badges!
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Unranked
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Quick Actions */}
-              <div className={commonStyles.card}>
-                <h2 className={`${commonStyles.heading.h3} mb-6`}>
-                  Quick Actions
-                </h2>
-                <div className="space-y-4">
-                  <Link
-                    to="/log-session"
-                    className={`${commonStyles.button.primary} block text-center`}
-                  >
-                    Log New Session
-                  </Link>
-                  <Link
-                    to="/my-stats"
-                    className={`${commonStyles.button.secondary} block text-center`}
-                  >
-                    View Detailed Stats
-                  </Link>
-                </div>
-              </div>
-
-              {/* Logout button at the bottom for mobile/desktop */}
-              <div className="mt-8 flex justify-center">
                 <button
-                  onClick={() => {
-                    if (window.confirm('Are you sure you want to logout?')) {
-                      window.localStorage.removeItem('user');
-                      window.localStorage.removeItem('token');
-                      window.location.href = '/login';
-                    }
-                  }}
-                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg shadow transition-colors w-full max-w-xs"
+                  onClick={() => refetchStats()}
+                  className="text-sm text-primary hover:text-primary/80 transition-colors"
                 >
-                  Logout
+                  Refresh Stats
                 </button>
               </div>
+              {statsLoading ? (
+                <div className="flex justify-center items-center h-32">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : statsError ? (
+                <div className="bg-red-500/20 border border-red-500 text-red-200 p-4 rounded-xl">
+                  {statsError}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="bg-gray-800/50 p-4 rounded-xl">
+                    <p className="text-gray-400">Total Sessions</p>
+                    <p className="text-2xl font-bold">{stats.totalSessions}</p>
+                  </div>
+                  <div className="bg-gray-800/50 p-4 rounded-xl">
+                    <p className="text-gray-400">Total Duration</p>
+                    <p className="text-2xl font-bold">{stats.totalDuration.toFixed(2)} min</p>
+                  </div>
+                  <div className="bg-gray-800/50 p-4 rounded-xl">
+                    <p className="text-gray-400">Average Duration</p>
+                    <p className="text-2xl font-bold">{stats.averageDuration ? stats.averageDuration.toFixed(2) : '0.00'} min</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-8">
+            {/* Badges */}
+            <div className={commonStyles.card}>
+              <h2 className={`${commonStyles.heading.h3} mb-6`}>
+                Your Badges
+              </h2>
+              {leaderboardLoading ? (
+                <div className="flex justify-center items-center h-32">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : leaderboardError ? (
+                <div className="bg-red-500/20 border border-red-500 text-red-200 p-4 rounded-xl">
+                  {leaderboardError}
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {isRanked && userRank < 3 ? (
+                    <div className="text-center">
+                      <Badge type={getBadgeForRank(userRank)} size="lg" />
+                      <p className="mt-4 text-gray-400">
+                        You are currently ranked #{userRank + 1} in the {getTimeframeLabel(timeframe)} leaderboard!
+                      </p>
+                    </div>
+                  ) : isRanked ? (
+                    <div className="text-center">
+                      <p className="text-gray-400 mb-4">
+                        Keep practicing to earn badges!
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Current rank: #{userRank + 1}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <p className="text-gray-400 mb-4">
+                        Keep practicing to earn badges!
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Unranked
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Quick Actions */}
+            <div className={commonStyles.card}>
+              <h2 className={`${commonStyles.heading.h3} mb-6`}>
+                Quick Actions
+              </h2>
+              <div className="space-y-4">
+                <Link
+                  to="/log-session"
+                  className={`${commonStyles.button.primary} block text-center`}
+                >
+                  Log New Session
+                </Link>
+                <Link
+                  to="/my-stats"
+                  className={`${commonStyles.button.secondary} block text-center`}
+                >
+                  View Detailed Stats
+                </Link>
+              </div>
+            </div>
+
+            {/* Logout button at the bottom for mobile/desktop */}
+            <div className="mt-8 flex justify-center">
+              <button
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to logout?')) {
+                    window.localStorage.removeItem('user');
+                    window.localStorage.removeItem('token');
+                    window.location.href = '/login';
+                  }
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg shadow transition-colors w-full max-w-xs"
+              >
+                Logout
+              </button>
             </div>
           </div>
         </div>
       </div>
-    </NotificationProvider>
+    </div>
   );
 }
 
