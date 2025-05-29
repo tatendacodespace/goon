@@ -8,7 +8,7 @@ const auth = require('../middleware/auth');
 const getLeaderboard = async (req, res) => {
   try {
     console.log('Leaderboard request received:', req.query);
-    const { timeframe = 'daily' } = req.query;
+    const { timeframe = 'daily', limit = 20, page = 1, userId } = req.query;
     let dateFilter = {};
 
     // Set date filter based on timeframe
@@ -26,9 +26,12 @@ const getLeaderboard = async (req, res) => {
       };
     }
 
-    console.log('Using date filter:', dateFilter);
+    const parsedLimit = Math.max(1, Math.min(parseInt(limit), 100));
+    const parsedPage = Math.max(1, parseInt(page));
+    const skip = (parsedPage - 1) * parsedLimit;
 
-    const leaderboard = await Session.aggregate([
+    // Get full leaderboard for rank calculation
+    const fullLeaderboard = await Session.aggregate([
       { $match: dateFilter },
       {
         $group: {
@@ -54,12 +57,31 @@ const getLeaderboard = async (req, res) => {
           sessionCount: 1
         }
       },
-      { $sort: { totalDuration: -1 } },
-      { $limit: 10 }
+      { $sort: { totalDuration: -1 } }
     ]);
 
-    console.log('Leaderboard results:', leaderboard);
-    res.json(leaderboard);
+    // Paginate
+    const leaderboard = fullLeaderboard.slice(skip, skip + parsedLimit);
+
+    // Find user rank if userId is provided
+    let userEntry = null;
+    let userRank = null;
+    if (userId) {
+      userRank = fullLeaderboard.findIndex(u => String(u._id) === String(userId));
+      if (userRank !== -1) {
+        userEntry = fullLeaderboard[userRank];
+        userRank = userRank + 1; // 1-based rank
+      }
+    }
+
+    res.json({
+      leaderboard,
+      total: fullLeaderboard.length,
+      page: parsedPage,
+      limit: parsedLimit,
+      user: userEntry,
+      userRank
+    });
   } catch (error) {
     console.error('Leaderboard error details:', {
       message: error.message,

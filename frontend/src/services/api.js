@@ -166,7 +166,9 @@ export const sessions = {
     return makeRequest(`/sessions/stats?timeframe=${timeframe}`);
   },
 
-  getLeaderboard: async (timeframe = 'weekly') => {
-    return makeRequest(`/sessions/leaderboard?timeframe=${timeframe}`);
+  getLeaderboard: async (timeframe = 'weekly', page = 1, limit = 20, userId = null) => {
+    let url = `/sessions/leaderboard?timeframe=${timeframe}&page=${page}&limit=${limit}`;
+    if (userId) url += `&userId=${userId}`;
+    return makeRequest(url);
   },
 };

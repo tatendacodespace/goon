@@ -12,22 +12,40 @@ const Leaderboard = () => {
   const [timeframe, setTimeframe] = useState('week');
   const { notify } = useNotification();
   const [lastRank, setLastRank] = useState(null);
+  const [page, setPage] = useState(1);
+  const [leaderboardData, setLeaderboardData] = useState({ leaderboard: [], total: 0, page: 1, limit: 20, user: null, userRank: null });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const fetchLeaderboard = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const data = await sessions.getLeaderboard(timeframe);
-      return data;
-    } catch (error) {
-      console.error('Error fetching leaderboard:', error);
-      throw error;
+      const data = await sessions.getLeaderboard(timeframe, page, 20, user?.id || user?._id);
+      setLeaderboardData(data);
+    } catch (err) {
+      setError(err.message || 'Failed to fetch leaderboard');
+    } finally {
+      setLoading(false);
     }
-  }, [timeframe]);
+  }, [timeframe, page, user]);
 
-  const { data: leaderboard, loading, error } = useRealtimeUpdates(
-    [],
-    fetchLeaderboard,
-    120000 // 2 minutes
-  );
+  useEffect(() => {
+    fetchLeaderboard();
+  }, [fetchLeaderboard]);
+
+  useEffect(() => {
+    if (leaderboardData.leaderboard && user) {
+      const currentRank = leaderboardData.leaderboard.findIndex(u => String(u._id) === String(user.id || user._id));
+      if (lastRank !== null && currentRank !== -1 && currentRank < lastRank) {
+        notify('You moved up the leaderboard!', 'success');
+        const audio = new Audio(notificationSound);
+        audio.play();
+        if (window.navigator.vibrate) window.navigator.vibrate(50);
+      }
+      setLastRank(currentRank);
+    }
+  }, [leaderboardData, user, lastRank, notify]);
 
   const getBadgeForRank = (rank) => {
     switch (rank) {
@@ -52,18 +70,8 @@ const Leaderboard = () => {
     }
   };
 
-  useEffect(() => {
-    if (leaderboard && user) {
-      const currentRank = leaderboard.findIndex(u => u._id === user._id);
-      if (lastRank !== null && currentRank !== -1 && currentRank < lastRank) {
-        notify('You moved up the leaderboard!', 'success');
-        const audio = new Audio(notificationSound);
-        audio.play();
-        if (window.navigator.vibrate) window.navigator.vibrate(50);
-      }
-      setLastRank(currentRank);
-    }
-  }, [leaderboard, user, lastRank, notify]);
+  const totalPages = Math.ceil(leaderboardData.total / leaderboardData.limit);
+  const userNotOnPage = leaderboardData.user && (leaderboardData.userRank < (page - 1) * leaderboardData.limit + 1 || leaderboardData.userRank > page * leaderboardData.limit);
 
   if (loading) {
     return (
@@ -84,7 +92,7 @@ const Leaderboard = () => {
     return (
       <div className="min-h-screen bg-background p-8">
         <div className="text-error">
-          Error loading leaderboard: {error && error.message ? error.message : String(error)}
+          Error loading leaderboard: {error}
         </div>
       </div>
     );
@@ -99,7 +107,7 @@ const Leaderboard = () => {
             {['day', 'week', 'month', 'all'].map((tf) => (
               <button
                 key={tf}
-                onClick={() => setTimeframe(tf)}
+                onClick={() => { setTimeframe(tf); setPage(1); }}
                 className={`px-3 py-1 rounded ${
                   timeframe === tf
                     ? 'bg-primary text-white'
@@ -112,32 +120,41 @@ const Leaderboard = () => {
           </div>
         </div>
 
-        {leaderboard?.length === 0 ? (
+        {leaderboardData.leaderboard?.length === 0 ? (
           <div className="text-center py-8 text-gray-400">
             No leaderboard data available for this timeframe
           </div>
         ) : (
           <div className="space-y-4">
-            {leaderboard?.map((entry, index) => (
-              <motion.div
-                key={entry._id || index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className={`bg-surface p-4 rounded-lg shadow-lg ${
-                  entry._id === user?._id ? 'ring-2 ring-primary' : ''
-                }`}
-              >
-                <div className="flex items-center justify-between">
+            {leaderboardData.leaderboard.map((entry, index) => {
+              const globalRank = (leaderboardData.page - 1) * leaderboardData.limit + index;
+              const isUser = String(entry._id) === String(user?.id || user?._id);
+              const isTop3 = globalRank < 3;
+              return (
+                <motion.div
+                  key={entry._id || index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className={`bg-surface p-4 rounded-lg shadow-lg flex items-center justify-between ${
+                    isUser ? 'ring-2 ring-primary' : ''
+                  } ${isTop3 ? 'glow-top3' : ''}`}
+                >
                   <div className="flex items-center space-x-4">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center font-bold">
-                      {index + 1}
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
+                      isTop3
+                        ? globalRank === 0
+                          ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-900 shadow-lg'
+                          : globalRank === 1
+                          ? 'bg-gradient-to-r from-purple-400 to-purple-700 text-purple-100 shadow-md'
+                          : 'bg-gradient-to-r from-blue-400 to-blue-700 text-blue-100 shadow-md'
+                        : 'bg-gradient-to-r from-primary to-secondary text-white'
+                    }`}>
+                      {globalRank + 1}
                     </div>
                     <div className="flex items-center space-x-2">
-                      <h3 className="text-lg font-semibold text-white">
-                        {entry.username}
-                      </h3>
-                      {index < 3 && <Badge type={getBadgeForRank(index)} size="sm" />}
+                      <h3 className={`text-lg font-semibold ${isTop3 ? 'text-glow' : 'text-white'}`}>{entry.username}</h3>
+                      {isTop3 && <Badge type={getBadgeForRank(globalRank)} size="sm" />}
                     </div>
                   </div>
                   <div className="text-right">
@@ -148,12 +165,66 @@ const Leaderboard = () => {
                       {entry.sessionCount || 0} sessions
                     </p>
                   </div>
+                </motion.div>
+              );
+            })}
+            {/* If user is not on this page, show their row at the bottom */}
+            {userNotOnPage && leaderboardData.user && (
+              <motion.div
+                key={leaderboardData.user._id + '-user'}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="bg-surface p-4 rounded-lg shadow-lg flex items-center justify-between ring-2 ring-primary mt-8"
+              >
+                <div className="flex items-center space-x-4">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold bg-gradient-to-r from-primary to-secondary text-white">
+                    {leaderboardData.userRank}
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <h3 className="text-lg font-semibold text-white">{leaderboardData.user.username}</h3>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-400">
+                    {leaderboardData.user.totalDuration ? Math.round(leaderboardData.user.totalDuration / 60) : 0} hours
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    {leaderboardData.user.sessionCount || 0} sessions
+                  </p>
                 </div>
               </motion.div>
-            ))}
+            )}
           </div>
         )}
+        {/* Pagination Controls */}
+        <div className="flex justify-center items-center gap-4 mt-8">
+          <button
+            className="px-4 py-2 rounded bg-surface-light text-gray-400 hover:text-white disabled:opacity-40"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+          >
+            Previous
+          </button>
+          <span className="text-white">Page {page} of {totalPages}</span>
+          <button
+            className="px-4 py-2 rounded bg-surface-light text-gray-400 hover:text-white disabled:opacity-40"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+          >
+            Next
+          </button>
+        </div>
       </div>
+      {/* Add styles for glow effect */}
+      <style>{`
+        .glow-top3 .text-glow {
+          text-shadow: 0 0 8px #fff, 0 0 16px #ffd700;
+        }
+        .glow-top3 {
+          box-shadow: 0 0 16px 4px #ffd70055, 0 0 32px 8px #fff2;
+        }
+      `}</style>
     </div>
   );
 };
