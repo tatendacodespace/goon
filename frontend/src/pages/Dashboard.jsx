@@ -6,6 +6,8 @@ import { useRealtimeUpdates } from './hooks/useRealtimeUpdates';
 import Badge from '../components/Badge';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import NotificationProvider, { useNotification } from '../components/NotificationProvider';
+import notificationSound from '../assets/notification.mp3';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -18,16 +20,48 @@ const Dashboard = () => {
 
   // Fetch user stats with real-time updates
   const { data: stats, loading: statsLoading, error: statsError, refetch: refetchStats } = useRealtimeUpdates(
-    null,
-    fetchStats,
-    120000 // 2 minutes
+    {
+      totalSessions: 0,
+      totalDuration: 0,
+      averageDuration: 0,
+      recentSessions: []
+    },
+    async () => {
+      const [stats, allSessions] = await Promise.all([
+        sessions.getStats(timeframe),
+        sessions.getAll()
+      ]);
+      // Attach recent sessions (last 5)
+      // Also recalculate totalTime and averageDuration for the selected timeframe
+      const now = new Date();
+      let filteredSessions = allSessions;
+      if (timeframe === 'day') {
+        const today = new Date(now);
+        today.setHours(0, 0, 0, 0);
+        filteredSessions = allSessions.filter(s => new Date(s.date) >= today);
+      } else if (timeframe === 'week') {
+        filteredSessions = allSessions.filter(s => new Date(s.date) >= new Date(now - 7 * 24 * 60 * 60 * 1000));
+      } else if (timeframe === 'month') {
+        filteredSessions = allSessions.filter(s => new Date(s.date) >= new Date(now - 30 * 24 * 60 * 60 * 1000));
+      }
+      const totalTime = filteredSessions.reduce((sum, s) => sum + s.duration, 0);
+      const sessionCount = filteredSessions.length;
+      const averageDuration = sessionCount > 0 ? totalTime / sessionCount : 0;
+      return {
+        ...stats,
+        totalTime,
+        averageDuration,
+        recentSessions: allSessions.slice(0, 5)
+      };
+    },
+    10000 // 10 seconds for live updates
   );
 
   // Fetch leaderboard with real-time updates
   const { data: leaderboard, loading: leaderboardLoading, error: leaderboardError, refetch: refetchLeaderboard } = useRealtimeUpdates(
     [],
     fetchLeaderboard,
-    120000 // 2 minutes
+    10000 // 10 seconds for live updates
   );
 
   // Refetch immediately if navigated from LogSession
@@ -46,7 +80,7 @@ const Dashboard = () => {
   }, [timeframe, refetchLeaderboard]);
 
   // Get user's rank from leaderboard
-  const userRank = leaderboard?.findIndex(u => u._id === user?._id) ?? -1;
+  const userRank = leaderboard?.findIndex(u => String(u._id) === String(user.id)) ?? -1;
 
   const getBadgeForRank = (index) => {
     switch (index) {
@@ -89,6 +123,19 @@ const Dashboard = () => {
   const greeting = `Welcome back, ${user.username}!`;
   const motivation = motivationalMessages[user.username.length % motivationalMessages.length];
 
+  const { notify } = useNotification();
+
+  // Example: Notify on stat update
+  useEffect(() => {
+    if (!statsLoading && stats && stats.totalSessions > 0) {
+      notify('Stats updated!', 'success');
+      const audio = new Audio(notificationSound);
+      audio.play();
+      // Optionally, add haptic feedback for mobile
+      if (window.navigator.vibrate) window.navigator.vibrate(50);
+    }
+  }, [stats, statsLoading, notify]);
+
   if (!user) {
     return (
       <div className="min-h-screen bg-[#121212] text-white p-4 sm:p-8">
@@ -103,207 +150,148 @@ const Dashboard = () => {
     );
   }
 
-  if (statsLoading || leaderboardLoading) {
-    return (
-      <div className="min-h-screen bg-background p-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-surface rounded w-1/4"></div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-32 bg-surface rounded"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (statsError || leaderboardError) {
-    return (
-      <div className="min-h-screen bg-background p-8">
-        <div className="text-error">
-          {statsError && (
-            <div>Error loading stats: {statsError && statsError.message ? statsError.message : String(statsError)}</div>
-          )}
-          {leaderboardError && (
-            <div>Error loading leaderboard: {leaderboardError && leaderboardError.message ? leaderboardError.message : String(leaderboardError)}</div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  if (leaderboard?.length === 0) {
-    return (
-      <div className="min-h-screen bg-background p-8">
-        <div className="text-center py-8 text-gray-400">
-          No leaderboard data available for this timeframe
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Personalized Greeting & Progress */}
-        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-white flex items-center gap-2">
-              {greeting} <span className="text-2xl">😈</span>
-            </h1>
-            <p className="text-accent mt-2 text-lg">{motivation}</p>
+    <NotificationProvider>
+      <div className="min-h-screen bg-background p-4 sm:p-8 font-mono">
+        <div className="max-w-7xl mx-auto">
+          {/* Personalized Greeting & Progress */}
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-white flex items-center gap-2">
+                {greeting} <span className="text-2xl">😈</span>
+              </h1>
+              <p className="text-accent mt-2 text-lg">{motivation}</p>
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg shadow-glow w-full md:w-auto"
+              onClick={() => navigate('/log-session')}
+            >
+              Log New Session
+            </motion.button>
           </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg shadow-glow w-full md:w-auto"
-            onClick={() => navigate('/log-session')}
-          >
-            Log New Session
-          </motion.button>
-        </div>
 
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-1">
-            <span className="text-gray-400 text-sm">Weekly Progress</span>
-            <span className="text-gray-400 text-sm">{progress}%</span>
+          {/* Progress Bar */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-gray-400 text-sm">Weekly Progress</span>
+              <span className="text-gray-400 text-sm">{progress}%</span>
+            </div>
+            <div className="w-full bg-gray-800 rounded-full h-3">
+              <div
+                className="bg-primary h-3 rounded-full transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
           </div>
-          <div className="w-full bg-gray-800 rounded-full h-3">
-            <div
-              className="bg-primary h-3 rounded-full transition-all duration-500"
-              style={{ width: `${progress}%` }}
-            ></div>
-          </div>
-        </div>
 
-        {/* Main Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-surface p-6 rounded-lg shadow-lg flex flex-col items-center">
-            <h3 className="text-lg font-semibold text-white mb-2">Total Sessions</h3>
-            <p className="text-3xl font-bold text-primary">{stats?.totalSessions || 0}</p>
+          {/* Main Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-surface p-6 rounded-lg shadow-lg flex flex-col items-center">
+              <h3 className="text-lg font-semibold text-white mb-2">Total Sessions</h3>
+              <p className="text-3xl font-bold text-primary">{stats?.totalSessions || 0}</p>
+            </div>
+            <div className="bg-surface p-6 rounded-lg shadow-lg flex flex-col items-center">
+              <h3 className="text-lg font-semibold text-white mb-2">Total Time</h3>
+              <p className="text-3xl font-bold text-secondary">
+                {stats?.totalTime ? stats.totalTime.toFixed(2) : '0.00'} min
+              </p>
+            </div>
+            <div className="bg-surface p-6 rounded-lg shadow-lg flex flex-col items-center">
+              <h3 className="text-lg font-semibold text-white mb-2">Average Duration</h3>
+              <p className="text-3xl font-bold text-accent">
+                {stats?.averageDuration ? stats.averageDuration.toFixed(2) : '0.00'} min
+              </p>
+            </div>
           </div>
-          <div className="bg-surface p-6 rounded-lg shadow-lg flex flex-col items-center">
-            <h3 className="text-lg font-semibold text-white mb-2">Total Time</h3>
-            <p className="text-3xl font-bold text-secondary">
-              {Math.round(stats?.totalTime / 60) || 0} hours
-            </p>
-          </div>
-          <div className="bg-surface p-6 rounded-lg shadow-lg flex flex-col items-center">
-            <h3 className="text-lg font-semibold text-white mb-2">Average Duration</h3>
-            <p className="text-3xl font-bold text-accent">
-              {Math.round(stats?.averageDuration / 60) || 0} min
-            </p>
-          </div>
-        </div>
 
-        {/* Badges/Achievements Section */}
-        <div className="bg-surface p-6 rounded-lg shadow-lg mb-8">
-          <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">Your Badges <span>🏅</span></h2>
-          <div className="flex flex-wrap gap-4 items-center">
-            {/* Example: Show locked/unlocked badges, styled like CoD Mobile legendary/top5k */}
-            {[0,1,2].map((rank) => (
-              <div key={rank} className={`relative flex flex-col items-center ${userRank === rank ? 'scale-110' : 'opacity-60'}`}>
-                <Badge
-                  type={getBadgeForRank(rank)}
-                  size="lg"
-                  showTooltip={true}
-                />
-                <span className={`mt-2 text-xs font-bold ${userRank === rank ? 'text-primary' : 'text-gray-500'}`}>
-                  {rank === 0 ? 'Legendary' : rank === 1 ? 'Top 5K' : 'Top 10K'}
-                </span>
-                {userRank === rank && (
-                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white px-2 py-1 rounded-full text-xs shadow-lg animate-pulse">You</span>
-                )}
+          {/* Badges/Achievements Section */}
+          <div className="bg-surface p-6 rounded-lg shadow-lg mb-8">
+            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">Your Badges <span>🏅</span></h2>
+            <div className="flex flex-wrap gap-4 items-center">
+              {userRank !== undefined && userRank !== -1 && userRank < leaderboard.length && userRank < 3 ? (
+                <div className="relative flex flex-col items-center scale-110">
+                  <Badge
+                    type={getBadgeForRank(userRank)}
+                    size="lg"
+                    showTooltip={true}
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col items-center opacity-40">
+                  <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-2xl">🔒</div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Recent Activity Feed */}
+          <div className="bg-surface p-6 rounded-lg shadow-lg mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-white">Recent Activity</h2>
+              <div className="flex space-x-2">
+                {['day', 'week', 'month', 'all'].map((tf) => (
+                  <button
+                    key={tf}
+                    onClick={() => handleTimeframeChange(tf)}
+                    className={`px-3 py-1 rounded ${
+                      timeframe === tf
+                        ? 'bg-primary text-white'
+                        : 'bg-surface-light text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    {getTimeframeLabel(tf)}
+                  </button>
+                ))}
               </div>
-            ))}
-            {/* Locked badge example */}
-            {userRank > 2 && (
-              <div className="flex flex-col items-center opacity-40">
-                <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-2xl">🔒</div>
-                <span className="mt-2 text-xs font-bold text-gray-500">Locked</span>
+            </div>
+            {stats?.recentSessions && stats.recentSessions.length > 0 ? (
+              <div className="space-y-4">
+                {stats.recentSessions.map((session) => (
+                  <div
+                    key={session.id || session._id}
+                    className="flex items-center justify-between p-4 bg-surface-light rounded-lg border border-primary/20 hover:border-primary/60 transition-all duration-300 shadow-sm"
+                  >
+                    <div>
+                      <p className="text-white font-medium">
+                        {new Date(session.startTime || session.date).toLocaleDateString()}
+                      </p>
+                      <p className="text-gray-400">
+                        Duration: {session.duration ? session.duration.toFixed(2) : '0.00'} minutes
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {session.badges?.map((badge) => (
+                        <Badge key={badge} type={badge} size="sm" />
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
+            ) : (
+              <p className="text-gray-400 text-center py-4">No sessions logged yet</p>
             )}
           </div>
-        </div>
 
-        {/* Recent Activity Feed */}
-        <div className="bg-surface p-6 rounded-lg shadow-lg mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-white">Recent Activity</h2>
-            <div className="flex space-x-2">
-              {['day', 'week', 'month', 'all'].map((tf) => (
-                <button
-                  key={tf}
-                  onClick={() => handleTimeframeChange(tf)}
-                  className={`px-3 py-1 rounded ${
-                    timeframe === tf
-                      ? 'bg-primary text-white'
-                      : 'bg-surface-light text-gray-400 hover:text-white'
-                  }`}
-                >
-                  {getTimeframeLabel(tf)}
-                </button>
-              ))}
-            </div>
+          {/* Quick Actions */}
+          <div className="flex flex-col md:flex-row gap-4 mb-8">
+            <Link
+              to="/leaderboard"
+              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white text-center py-4 rounded-lg font-bold text-lg shadow-lg hover:scale-105 transition"
+            >
+              View Leaderboard
+            </Link>
+            <Link
+              to="/my-stats"
+              className="flex-1 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 text-center py-4 rounded-lg font-bold text-lg shadow-lg hover:scale-105 transition"
+            >
+              View My Stats
+            </Link>
           </div>
-          {stats?.recentSessions?.length > 0 ? (
-            <div className="space-y-4">
-              {stats.recentSessions.map((session) => (
-                <div
-                  key={session.id}
-                  className="flex items-center justify-between p-4 bg-surface-light rounded-lg border border-primary/20 hover:border-primary/60 transition-all duration-300 shadow-sm"
-                >
-                  <div>
-                    <p className="text-white font-medium">
-                      {new Date(session.startTime).toLocaleDateString()}
-                    </p>
-                    <p className="text-gray-400">
-                      Duration: {Math.round(session.duration / 60)} minutes
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {session.badges?.map((badge) => (
-                      <Badge key={badge} type={badge} size="sm" />
-                    ))}
-                  </div>
-                  {/* Share button */}
-                  <button
-                    className="ml-4 px-3 py-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-full text-xs font-semibold shadow hover:scale-105 transition"
-                    onClick={() => navigator.share && navigator.share({
-                      title: 'Check out my goon session!',
-                      text: `I just logged a ${Math.round(session.duration / 60)} min session on Goon Leaderboard!`,
-                      url: window.location.href
-                    })}
-                  >
-                    Share
-                  </button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-400 text-center py-4">No sessions logged yet</p>
-          )}
-        </div>
-
-        {/* Quick Actions */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <Link
-            to="/leaderboard"
-            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white text-center py-4 rounded-lg font-bold text-lg shadow-lg hover:scale-105 transition"
-          >
-            View Leaderboard
-          </Link>
-          <Link
-            to="/my-stats"
-            className="flex-1 bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 text-center py-4 rounded-lg font-bold text-lg shadow-lg hover:scale-105 transition"
-          >
-            View My Stats
-          </Link>
         </div>
       </div>
-    </div>
+    </NotificationProvider>
   );
 };
 

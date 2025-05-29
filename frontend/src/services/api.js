@@ -162,8 +162,8 @@ export const sessions = {
     return makeRequest('/sessions');
   },
 
-  getStats: async () => {
-    return makeRequest('/sessions/stats');
+  getStats: async (timeframe = 'all') => {
+    return makeRequest(`/sessions/stats?timeframe=${timeframe}`);
   },
 
   getLeaderboard: async (timeframe = 'weekly') => {

@@ -13,6 +13,9 @@ import Navbar from './components/Navbar';
 import { useAuth } from './context/AuthContext.jsx';
 import AuthContext from "./context/AuthContext.jsx";
 import { Helmet } from 'react-helmet';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import Footer from './components/Footer';
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -71,6 +74,8 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
       </Routes>
     </div>
   );
@@ -82,6 +87,7 @@ function App() {
       <AuthProvider>
         <div className="min-h-screen bg-[#121212]">
           <AppRoutes />
+          <Footer />
         </div>
       </AuthProvider>
     </BrowserRouter>

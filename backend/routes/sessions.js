@@ -79,13 +79,13 @@ router.post('/', auth, async (req, res) => {
     console.log('req.user in session creation:', req.user); // <-- log user
 
     // Validate duration
-    if (!duration || isNaN(duration) || duration <= 0) {
-      return res.status(400).json({ message: 'Valid duration is required' });
+    if (!duration || isNaN(duration) || duration < 0.083) { // 0.083 min = 5 seconds
+      return res.status(400).json({ message: 'Valid duration is required (minimum 5 seconds)' });
     }
 
     const session = new Session({
       user: req.user.userId, // Use userId from JWT
-      duration: parseInt(duration),
+      duration: duration, // Use float, not parseInt
       date: new Date() // Automatically set to current date/time
     });
 
@@ -119,9 +119,23 @@ router.get('/', auth, async (req, res) => {
 router.get('/stats', auth, async (req, res) => {
   try {
     const userId = req.user._id || req.user.userId;
-    const totalSessions = await Session.countDocuments({ user: userId });
+    const { timeframe = 'all' } = req.query;
+    let dateFilter = { user: userId };
+
+    // Set date filter based on timeframe
+    if (timeframe === 'day') {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      dateFilter.date = { $gte: today };
+    } else if (timeframe === 'week') {
+      dateFilter.date = { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) };
+    } else if (timeframe === 'month') {
+      dateFilter.date = { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) };
+    }
+
+    const totalSessions = await Session.countDocuments(dateFilter);
     const totalDuration = await Session.aggregate([
-      { $match: { user: userId } },
+      { $match: dateFilter },
       { $group: { _id: null, total: { $sum: '$duration' } } }
     ]);
 

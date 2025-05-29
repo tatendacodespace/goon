@@ -9,7 +9,7 @@ const sessionSchema = new mongoose.Schema({
   duration: {
     type: Number,
     required: true,
-    min: 1
+    min: 0.083 // 5 seconds in minutes
   },
   date: {
     type: Date,
@@ -20,4 +20,4 @@ const sessionSchema = new mongoose.Schema({
   timestamps: true
 });
 
-module.exports = mongoose.model('Session', sessionSchema); 
+module.exports = mongoose.model('Session', sessionSchema);
