@@ -300,7 +300,6 @@ function Profile() {
                 <div key={session._id} className="bg-gray-800 p-4 rounded-lg flex justify-between items-center">
                   <div>
                     <p className="text-gray-400 text-sm">{new Date(session.date).toLocaleString()}</p>
-                    <p className="text-lg font-semibold">{session.activity}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-gray-400 text-sm">Duration</p>
@@ -308,7 +307,7 @@ function Profile() {
                   </div>
                 </div>
               ))
-            }
+            )}
           </div>
         </div>
       </div>
