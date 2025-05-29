@@ -3,6 +3,7 @@ import { sessions } from '../services/api';
 import { commonStyles } from '../styles/theme';
 import { useNotification } from '../components/NotificationProvider';
 import notificationSound from '../assets/notification.mp3';
+import { useNavigate } from 'react-router-dom';
 
 // Cache configuration
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
@@ -17,16 +18,24 @@ function MyStats() {
   const [lastFetchTime, setLastFetchTime] = useState(0);
   const [isFetching, setIsFetching] = useState(false);
   const { notify } = useNotification();
+  const navigate = useNavigate();
 
   // Memoized fetch function with retry logic
   const fetchStats = useCallback(async (retryCount = 0) => {
     if (isFetching) return;
-    // REMOVE CACHE CHECK: always fetch fresh data
+    let timeoutId;
     try {
       setIsFetching(true);
       setError('');
+      // Timeout after 10 seconds
+      const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error('Request timed out. Please try again.')), 10000);
+      });
       // Get all sessions data (ignore backend stats)
-      const sessionsData = await sessions.getAll();
+      const sessionsData = await Promise.race([
+        sessions.getAll(),
+        timeoutPromise
+      ]);
       // Process the data
       const processedStats = {
         totalTime: 0,
@@ -57,22 +66,18 @@ function MyStats() {
       setRecentSessions(sessionsData.slice(0, 5));
       setLastFetchTime(now.getTime());
     } catch (err) {
-      console.error('Error fetching stats:', err);
-      
-      // Retry logic
-      if (retryCount < MAX_RETRIES) {
-        setTimeout(() => {
-          fetchStats(retryCount + 1);
-        }, RETRY_DELAY * Math.pow(2, retryCount)); // Exponential backoff
+      if (err.message && (err.message.includes('401') || err.message.includes('403') || err.message.toLowerCase().includes('unauthorized'))) {
+        setError('Session expired. Please log in again.');
+        setTimeout(() => navigate('/login'), 2000);
         return;
       }
-      
-      setError('Failed to load statistics. Please try again later.');
+      setError(err.message || 'Failed to load statistics. Please try again later.');
     } finally {
+      clearTimeout(timeoutId);
       setIsFetching(false);
       setLoading(false);
     }
-  }, [isFetching, lastFetchTime, stats]);
+  }, [isFetching, lastFetchTime, stats, navigate]);
 
   // Initial fetch
   useEffect(() => {
