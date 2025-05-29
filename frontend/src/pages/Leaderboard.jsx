@@ -78,6 +78,17 @@ const Leaderboard = () => {
   const leaderboardArr = Array.isArray(leaderboard) ? leaderboard : (Array.isArray(leaderboard.leaderboard) ? leaderboard.leaderboard : []);
   const userRank = leaderboardArr.findIndex(u => String(u._id) === String(user?.id || user?._id));
 
+  // Calculate global rank for each entry
+  const getGlobalRank = (index) => (page - 1) * leaderboardData.limit + index;
+
+  // Find user's global rank if not on this page
+  const userRow = leaderboardData.user && (leaderboardData.userRank !== null && leaderboardData.userRank !== undefined)
+    ? {
+        ...leaderboardData.user,
+        globalRank: leaderboardData.userRank,
+      }
+    : null;
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background p-8">
@@ -131,40 +142,75 @@ const Leaderboard = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {leaderboardArr.map((entry, index) => (
-              <motion.div
-                key={entry._id || index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className={`bg-surface p-4 rounded-lg shadow-lg ${
-                  entry._id === user?.id ? 'ring-2 ring-primary' : ''
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center font-bold">
-                      {index + 1}
+            {leaderboardArr.map((entry, index) => {
+              const globalRank = getGlobalRank(index);
+              return (
+                <motion.div
+                  key={entry._id || index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`bg-surface p-4 rounded-lg shadow-lg ${
+                    entry._id === user?.id ? 'ring-2 ring-primary' : ''
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center font-bold">
+                        {globalRank + 1}
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <h3 className="text-lg font-semibold text-white">
+                          {entry.username}
+                        </h3>
+                        {globalRank < 3 && <Badge type={getBadgeForRank(globalRank)} size="sm" />}
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <h3 className="text-lg font-semibold text-white">
-                        {entry.username}
-                      </h3>
-                      {index < 3 && <Badge type={getBadgeForRank(index)} size="sm" />}
+                    <div className="text-right">
+                      <p className="text-sm text-gray-400">
+                        {entry.totalDuration ? Math.round(entry.totalDuration / 60) : 0} hours
+                      </p>
+                      <p className="text-sm text-gray-400">
+                        {entry.sessionCount || 0} sessions
+                      </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-400">
-                      {entry.totalDuration ? Math.round(entry.totalDuration / 60) : 0} hours
-                    </p>
-                    <p className="text-sm text-gray-400">
-                      {entry.sessionCount || 0} sessions
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </div>
+        )}
+        {/* If user is not on this page, show their row at the bottom */}
+        {userNotOnPage && userRow && (
+          <motion.div
+            key={userRow._id + '-user'}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className={`bg-surface p-4 rounded-lg shadow-lg ring-2 ring-primary`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center font-bold">
+                  {userRow.globalRank + 1}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <h3 className="text-lg font-semibold text-white">
+                    {userRow.username}
+                  </h3>
+                  {userRow.globalRank < 3 && <Badge type={getBadgeForRank(userRow.globalRank)} size="sm" />}
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-400">
+                  {userRow.totalDuration ? Math.round(userRow.totalDuration / 60) : 0} hours
+                </p>
+                <p className="text-sm text-gray-400">
+                  {userRow.sessionCount || 0} sessions
+                </p>
+              </div>
+            </div>
+          </motion.div>
         )}
         {/* Pagination Controls */}
         <div className="flex justify-center items-center gap-4 mt-8">

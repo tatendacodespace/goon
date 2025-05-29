@@ -245,7 +245,7 @@ function Profile() {
                         Keep practicing to earn badges!
                       </p>
                       <p className="text-sm text-gray-500">
-                        Unranked
+                        Not ranked yet
                       </p>
                     </div>
                   )}
