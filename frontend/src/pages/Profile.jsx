@@ -141,6 +141,10 @@ function Profile() {
   return (
     <div className="min-h-screen bg-background text-white p-4 sm:p-8 font-mono">
       <div className="max-w-7xl mx-auto">
+        <h1 className={`${commonStyles.heading.h1} text-center`}>
+          Your Profile
+        </h1>
+        <p className="text-accent text-center mb-8">See your stats, badges, and how you rank among gooners everywhere. Keep logging and climb the leaderboard!</p>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Profile Info */}
           <div className="lg:col-span-2 space-y-8">
@@ -284,6 +288,27 @@ function Profile() {
                 Logout
               </button>
             </div>
+          </div>
+        </div>
+        <div className="bg-surface p-6 rounded-lg shadow-lg mb-8">
+          <h2 className="text-xl font-bold text-white mb-4">Recent Sessions</h2>
+          <div className="space-y-4">
+            {stats.recentSessions.length === 0 ? (
+              <div className="text-center text-gray-400">No sessions yet. Start logging to build your streak!</div>
+            ) : (
+              stats.recentSessions.map((session, index) => (
+                <div key={session._id} className="bg-gray-800 p-4 rounded-lg flex justify-between items-center">
+                  <div>
+                    <p className="text-gray-400 text-sm">{new Date(session.date).toLocaleString()}</p>
+                    <p className="text-lg font-semibold">{session.activity}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-gray-400 text-sm">Duration</p>
+                    <p className="text-xl font-bold">{session.duration.toFixed(2)} min</p>
+                  </div>
+                </div>
+              ))
+            }
           </div>
         </div>
       </div>

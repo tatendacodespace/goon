@@ -177,6 +177,7 @@ function MyStats() {
         <h1 className={`${commonStyles.heading.h1} text-center`}>
           📊 My Stats
         </h1>
+        <p className="text-accent text-center mb-8">Track your goon stats, see your progress, and compare with gooners around the world. Keep logging to improve your rank!</p>
         
         {/* Main Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -271,31 +272,35 @@ function MyStats() {
             Recent Sessions
           </h2>
           <div className="space-y-4">
-            {recentSessions.map((session) => (
-              <div
-                key={session._id}
-                className="bg-gray-800/50 p-4 rounded-xl border border-gray-700 hover:border-primary/30 transition-all duration-300"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-lg font-medium">
-                      {new Date(session.date).toLocaleDateString()}
-                    </p>
-                    {session.notes && (
-                      <p className="text-sm text-gray-400 mt-1">
-                        {session.notes}
+            {recentSessions.length === 0 ? (
+              <div className="text-center text-gray-400">No sessions yet. Start logging to see your stats grow!</div>
+            ) : (
+              recentSessions.map((session) => (
+                <div
+                  key={session._id}
+                  className="bg-gray-800/50 p-4 rounded-xl border border-gray-700 hover:border-primary/30 transition-all duration-300"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-lg font-medium">
+                        {new Date(session.date).toLocaleDateString()}
                       </p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-primary">
-                      {session.duration ? session.duration.toFixed(2) : '0.00'}
-                    </p>
-                    <p className="text-sm text-gray-400">minutes</p>
+                      {session.notes && (
+                        <p className="text-sm text-gray-400 mt-1">
+                          {session.notes}
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-primary">
+                        {session.duration ? session.duration.toFixed(2) : '0.00'}
+                      </p>
+                      <p className="text-sm text-gray-400">minutes</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>

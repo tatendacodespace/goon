@@ -122,7 +122,7 @@ const Leaderboard = () => {
 
         {leaderboardData.leaderboard?.length === 0 ? (
           <div className="text-center py-8 text-gray-400">
-            No leaderboard data available for this timeframe
+            No gooners have logged sessions for this timeframe yet. Be the first!
           </div>
         ) : (
           <div className="space-y-4">

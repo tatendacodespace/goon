@@ -157,9 +157,9 @@ const Dashboard = () => {
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-white flex items-center gap-2">
-              {greeting} <span className="text-2xl">😈</span>
+              Welcome back, {user.username}! <span className="text-2xl">😈</span>
             </h1>
-            <p className="text-accent mt-2 text-lg">{motivation}</p>
+            <p className="text-accent mt-2 text-lg">Track your stats, see your progress, and compete with gooners around the world. Can you reach the top?</p>
           </div>
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -269,7 +269,7 @@ const Dashboard = () => {
               ))}
             </div>
           ) : (
-            <p className="text-gray-400 text-center py-4">No sessions logged yet</p>
+            <p className="text-gray-400 text-center py-4">No sessions logged yet. Start logging to see your progress!</p>
           )}
         </div>
 

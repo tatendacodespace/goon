@@ -20,9 +20,10 @@ function Home() {
       setLoading(true);
       setError('');
       console.log('Fetching leaderboard...');
-      const data = await sessions.getLeaderboard(timeframe);
-      console.log('Leaderboard data:', data);
-      setTopGooners(data.slice(0, 3)); // Get top 3 users
+      const data = await sessions.getLeaderboard(timeframe, 1, 3);
+      // Defensive: handle both array and object response
+      let topArr = Array.isArray(data) ? data : (Array.isArray(data.leaderboard) ? data.leaderboard : []);
+      setTopGooners(topArr.slice(0, 3)); // Get top 3 users
     } catch (err) {
       console.error('Error fetching leaderboard:', err);
       setError(err.message || 'Failed to load leaderboard');
@@ -82,10 +83,10 @@ function Home() {
           {/* Hero Section */}
           <div className="text-center mb-16">
             <h1 className={`${commonStyles.heading.h1} mb-6`}>
-              Welcome to Goon Leaderboard <span className="text-4xl align-middle">😈</span>
+              Compete with other gooners world-wide <span className="text-4xl align-middle">😈</span>
             </h1>
             <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
-              Track your progress, compete with others, and become the ultimate goon master!
+              The internet's most competitive goon leaderboard. Log your sessions, climb the ranks, and see how you stack up against gooners everywhere. Join the fun and make your mark!
             </p>
             {!user ? (
               <div className="flex justify-center space-x-4">
@@ -145,7 +146,7 @@ function Home() {
                 </div>
               ) : topGooners.length === 0 ? (
                 <div className="text-center py-8 text-gray-400">
-                  No data available for this timeframe
+                  No gooners have logged sessions for this timeframe yet. Be the first!
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -158,10 +159,9 @@ function Home() {
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${index === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-900 shadow-lg' : index === 1 ? 'bg-gradient-to-r from-purple-400 to-purple-700 text-purple-100 shadow-md' : index === 2 ? 'bg-gradient-to-r from-blue-400 to-blue-700 text-blue-100 shadow-md' : 'bg-gray-700 text-gray-300'}`}>{index + 1}</div>
                         <div className="flex items-center space-x-2">
                           <h3 className="text-lg font-semibold">
-                            {user.username}
+                            @{user.username}
                           </h3>
                           <Badge type={getBadgeForRank(index)} size="md" />
-                          {/* Removed: Legendary, Top 5K, Top 10K labels */}
                         </div>
                       </div>
                       <div className="text-right">
@@ -181,7 +181,7 @@ function Home() {
                   to="/leaderboard"
                   className="text-primary hover:text-primary/80 transition-colors"
                 >
-                  View Full Leaderboard →
+                  See the full leaderboard →
                 </Link>
               </div>
             </div>
@@ -190,17 +190,17 @@ function Home() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className={commonStyles.card}>
                 <div className="text-3xl mb-4">📊</div>
-                <h3 className="text-xl font-semibold mb-2">Track Progress</h3>
+                <h3 className="text-xl font-semibold mb-2">Track Your Stats</h3>
                 <p className="text-gray-400">
-                  Monitor your sessions and watch your stats grow
+                  Watch your numbers grow and see your progress over time. Compete for the top spot!
                 </p>
               </div>
 
               <div className={commonStyles.card}>
                 <div className="text-3xl mb-4">🏆</div>
-                <h3 className="text-xl font-semibold mb-2">Compete</h3>
+                <h3 className="text-xl font-semibold mb-2">Climb the Ranks</h3>
                 <p className="text-gray-400">
-                  Join the leaderboard and climb the ranks
+                  Challenge other gooners, get on the leaderboard, and see who comes out on top.
                 </p>
               </div>
 
@@ -208,7 +208,7 @@ function Home() {
                 <div className="text-3xl mb-4">🌟</div>
                 <h3 className="text-xl font-semibold mb-2">Earn Badges</h3>
                 <p className="text-gray-400">
-                  Unlock achievements for your dedication
+                  Unlock achievements for your dedication and consistency. Show off your badges!
                 </p>
               </div>
 
@@ -216,7 +216,7 @@ function Home() {
                 <div className="text-3xl mb-4">🔒</div>
                 <h3 className="text-xl font-semibold mb-2">Privacy First</h3>
                 <p className="text-gray-400">
-                  Your data is secure and private
+                  Your stats are private and secure. Compete anonymously and have fun!
                 </p>
               </div>
             </div>
