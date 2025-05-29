@@ -151,8 +151,8 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-8 font-mono">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-background p-4 sm:p-6 md:p-8 font-mono">
+      <div className="max-w-7xl mx-auto w-full">
         {/* Personalized Greeting & Progress */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
           <div>

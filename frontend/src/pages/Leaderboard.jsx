@@ -91,8 +91,8 @@ const Leaderboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-8 font-mono">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-background p-4 sm:p-6 md:p-8 font-mono">
+      <div className="max-w-4xl mx-auto w-full">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-white">Leaderboard</h1>
           <div className="flex space-x-2">

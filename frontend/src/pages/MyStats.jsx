@@ -105,8 +105,13 @@ function MyStats() {
   useEffect(() => {
     if (!loading && stats && stats.sessionCount > 0) {
       notify('Stats updated!', 'success');
-      const audio = new Audio(notificationSound);
-      audio.play();
+      // Only play sound if not already playing
+      if (typeof window !== 'undefined' && window.Audio) {
+        try {
+          const audio = new Audio(notificationSound);
+          audio.play().catch(() => {});
+        } catch (e) {}
+      }
       if (window.navigator.vibrate) window.navigator.vibrate(50);
     }
   }, [stats, loading, notify]);
@@ -161,6 +166,22 @@ function MyStats() {
           </h1>
           <div className="bg-red-500/20 border border-red-500 text-red-200 p-4 rounded-xl">
             {error}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Guard: if stats is null, show a fallback
+  if (!stats) {
+    return (
+      <div className="min-h-screen bg-background text-white p-4 sm:p-8 font-mono">
+        <div className="max-w-7xl mx-auto">
+          <h1 className={`${commonStyles.heading.h1} text-center`}>
+            📊 My Stats
+          </h1>
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
           </div>
         </div>
       </div>
