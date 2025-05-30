@@ -21,6 +21,7 @@ function MyStats() {
   const fetchStats = useCallback(async (retryCount = 0) => {
     if (isFetching) return;
     let timeoutId;
+    const now = new Date(); // <-- Fix: define now here
     try {
       setIsFetching(true);
       setError('');
