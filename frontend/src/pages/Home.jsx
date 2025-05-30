@@ -153,23 +153,24 @@ function Home() {
                   {topGooners.map((user, index) => (
                     <div
                       key={user?._id || index}
-                      className={`bg-gray-800/50 p-2 md:p-4 rounded-xl border border-gray-700 hover:border-primary/30 transition-all duration-300 flex items-center justify-between ${index === 0 ? 'ring-4 ring-yellow-400' : index === 1 ? 'ring-2 ring-purple-500' : index === 2 ? 'ring-2 ring-blue-400' : ''}`}
+                      className={`bg-gray-800/50 p-1 md:p-3 rounded-lg border border-gray-700 hover:border-primary/30 transition-all duration-300 flex items-center justify-between ${index === 0 ? 'ring-4 ring-yellow-400' : index === 1 ? 'ring-2 ring-purple-500' : index === 2 ? 'ring-2 ring-blue-400' : ''}`}
+                      style={{ minHeight: '2.5rem' }}
                     >
-                      <div className="flex items-center space-x-4">
-                        <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-base md:text-lg ${index === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-900 shadow-lg' : index === 1 ? 'bg-gradient-to-r from-purple-400 to-purple-700 text-purple-100 shadow-md' : index === 2 ? 'bg-gradient-to-r from-blue-400 to-blue-700 text-blue-100 shadow-md' : 'bg-gray-700 text-gray-300'}`}>{index + 1}</div>
-                        <div className="flex items-center space-x-2">
-                          <h3 className="text-lg font-semibold">
+                      <div className="flex items-center space-x-2 md:space-x-4">
+                        <div className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center font-bold text-xs md:text-base ${index === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-900 shadow-lg' : index === 1 ? 'bg-gradient-to-r from-purple-400 to-purple-700 text-purple-100 shadow-md' : index === 2 ? 'bg-gradient-to-r from-blue-400 to-blue-700 text-blue-100 shadow-md' : 'bg-gray-700 text-gray-300'}`}>{index + 1}</div>
+                        <div className="flex items-center space-x-1 md:space-x-2">
+                          <h3 className="text-xs md:text-base font-semibold">
                             @{user.username}
                           </h3>
-                          <Badge type={getBadgeForRank(index)} size="md" />
+                          <Badge type={getBadgeForRank(index)} size="sm" />
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-gray-400">
-                          {user.totalDuration ? user.totalDuration.toFixed(2) : '0.00'} minutes
+                        <p className="text-xs md:text-sm text-gray-400">
+                          {user.totalDuration ? (user.totalDuration / 60).toFixed(2) : '0.00'} hours
                         </p>
-                        <p className="text-sm text-gray-400">
-                          Avg: {user.sessionCount ? (user.totalDuration / user.sessionCount).toFixed(2) : '0.00'} min
+                        <p className="text-xs md:text-sm text-gray-400">
+                          Avg: {user.sessionCount ? ((user.totalDuration / user.sessionCount) / 60).toFixed(2) : '0.00'} hrs
                         </p>
                       </div>
                     </div>
