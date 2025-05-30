@@ -17,6 +17,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Footer from './components/Footer';
 import NotificationProvider from './components/NotificationProvider';
+import { Analytics } from '@vercel/analytics/react';
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -89,6 +90,7 @@ function App() {
         <NotificationProvider>
           <div className="min-h-screen bg-[#121212]">
             <AppRoutes />
+            <Analytics />
             <Footer />
           </div>
         </NotificationProvider>
