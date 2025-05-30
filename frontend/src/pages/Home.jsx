@@ -153,10 +153,10 @@ function Home() {
                   {topGooners.map((user, index) => (
                     <div
                       key={user?._id || index}
-                      className={`bg-gray-800/50 p-4 rounded-xl border border-gray-700 hover:border-primary/30 transition-all duration-300 flex items-center justify-between ${index === 0 ? 'ring-4 ring-yellow-400' : index === 1 ? 'ring-2 ring-purple-500' : index === 2 ? 'ring-2 ring-blue-400' : ''}`}
+                      className={`bg-gray-800/50 p-2 md:p-4 rounded-xl border border-gray-700 hover:border-primary/30 transition-all duration-300 flex items-center justify-between ${index === 0 ? 'ring-4 ring-yellow-400' : index === 1 ? 'ring-2 ring-purple-500' : index === 2 ? 'ring-2 ring-blue-400' : ''}`}
                     >
                       <div className="flex items-center space-x-4">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${index === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-900 shadow-lg' : index === 1 ? 'bg-gradient-to-r from-purple-400 to-purple-700 text-purple-100 shadow-md' : index === 2 ? 'bg-gradient-to-r from-blue-400 to-blue-700 text-blue-100 shadow-md' : 'bg-gray-700 text-gray-300'}`}>{index + 1}</div>
+                        <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-base md:text-lg ${index === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-900 shadow-lg' : index === 1 ? 'bg-gradient-to-r from-purple-400 to-purple-700 text-purple-100 shadow-md' : index === 2 ? 'bg-gradient-to-r from-blue-400 to-blue-700 text-blue-100 shadow-md' : 'bg-gray-700 text-gray-300'}`}>{index + 1}</div>
                         <div className="flex items-center space-x-2">
                           <h3 className="text-lg font-semibold">
                             @{user.username}

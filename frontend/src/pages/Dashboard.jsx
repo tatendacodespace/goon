@@ -230,7 +230,7 @@ const Dashboard = () => {
         <div className="bg-surface p-6 rounded-lg shadow-lg mb-8">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-white">Recent Activity</h2>
-            <div className="flex space-x-2">
+            <div className="flex space-x-2 overflow-x-auto whitespace-nowrap no-scrollbar max-w-full py-2">
               {['day', 'week', 'month', 'all'].map((tf) => (
                 <button
                   key={tf}
