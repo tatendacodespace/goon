@@ -217,7 +217,7 @@ function MyStats() {
               {stats.averageDuration ? stats.averageDuration.toFixed(2) : '0.00'}
             </p>
             <p className="text-sm text-gray-400">
-              {getStatDescription('averageDuration', Math.round(stats.totalTime / stats.sessionCount))}
+              {getStatDescription('averageDuration', stats.averageDuration ? stats.averageDuration : 0)}
             </p>
           </div>
         </div>
