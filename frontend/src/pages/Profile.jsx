@@ -111,10 +111,13 @@ function Profile() {
       console.log('Leaderboard:', leaderboard);
       console.log('Current user:', user);
       console.log('Current user.id:', user.id);
-      const found = leaderboard.find(u => String(u._id) === String(user.id));
-      console.log('User found in leaderboard:', found);
+      // Defensive: always use leaderboardArr for array ops
+      if (Array.isArray(leaderboardArr)) {
+        const found = leaderboardArr.find(u => String(u._id) === String(user.id));
+        console.log('User found in leaderboard:', found);
+      }
     }
-  }, [leaderboard, user]);
+  }, [leaderboard, leaderboardArr, user]);
 
   useEffect(() => {
     if (!statsLoading && stats && stats.totalSessions > 0) {
