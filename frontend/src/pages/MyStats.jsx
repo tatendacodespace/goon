@@ -14,12 +14,26 @@ function MyStats() {
     setLoading(true);
     setError('');
     try {
+      // Use 'all' timeframe for all-time stats
       const summary = await sessions.getStats('all');
-      setStats(summary);
+      // Defensive: fill missing fields with 0
+      setStats({
+        totalTime: summary.totalTime ?? summary.totalDuration ?? 0,
+        sessionCount: summary.sessionCount ?? summary.totalSessions ?? 0,
+        averageDuration: summary.averageDuration ?? 0,
+        todayTime: summary.todayTime ?? 0,
+        todaySessions: summary.todaySessions ?? 0,
+        weekTime: summary.weekTime ?? 0,
+        weekSessions: summary.weekSessions ?? 0,
+      });
     } catch (err) {
       if (err.message && (err.message.includes('401') || err.message.includes('403') || err.message.toLowerCase().includes('unauthorized'))) {
         setError('Session expired. Please log in again.');
         setTimeout(() => navigate('/login'), 2000);
+        return;
+      }
+      if (err.message && err.message.includes('404')) {
+        setError('Stats not found. Try logging a session first!');
         return;
       }
       setError(err.message || 'Failed to load statistics. Please try again later.');
