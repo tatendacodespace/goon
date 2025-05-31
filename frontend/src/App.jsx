@@ -18,6 +18,7 @@ import TermsOfService from './pages/TermsOfService';
 import Footer from './components/Footer';
 import NotificationProvider from './components/NotificationProvider';
 import { Analytics } from '@vercel/analytics/react';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -88,11 +89,13 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <NotificationProvider>
-          <div className="min-h-screen bg-[#121212]">
-            <AppRoutes />
-            <Analytics />
-            <Footer />
-          </div>
+          <ErrorBoundary>
+            <div className="min-h-screen bg-[#121212]">
+              <AppRoutes />
+              <Analytics />
+              <Footer />
+            </div>
+          </ErrorBoundary>
         </NotificationProvider>
       </AuthProvider>
     </BrowserRouter>
