@@ -141,30 +141,46 @@ router.get('/', auth, async (req, res) => {
 router.get('/stats', auth, async (req, res) => {
   try {
     const userId = req.user._id || req.user.userId;
-    const { timeframe = 'all' } = req.query;
-    let dateFilter = { user: userId };
 
-    // Set date filter based on timeframe
-    if (timeframe === 'day') {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      dateFilter.date = { $gte: today };
-    } else if (timeframe === 'week') {
-      dateFilter.date = { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) };
-    } else if (timeframe === 'month') {
-      dateFilter.date = { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) };
-    }
-
-    const totalSessions = await Session.countDocuments(dateFilter);
-    const totalDuration = await Session.aggregate([
-      { $match: dateFilter },
+    // --- All-time stats ---
+    const allTimeFilter = { user: userId };
+    const totalSessions = await Session.countDocuments(allTimeFilter);
+    const totalDurationAgg = await Session.aggregate([
+      { $match: allTimeFilter },
       { $group: { _id: null, total: { $sum: '$duration' } } }
     ]);
+    const totalDuration = totalDurationAgg[0]?.total || 0;
+    const averageDuration = totalSessions > 0 ? totalDuration / totalSessions : 0;
+
+    // --- Today's stats ---
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayFilter = { user: userId, date: { $gte: today } };
+    const todaySessions = await Session.countDocuments(todayFilter);
+    const todayDurationAgg = await Session.aggregate([
+      { $match: todayFilter },
+      { $group: { _id: null, total: { $sum: '$duration' } } }
+    ]);
+    const todayTime = todayDurationAgg[0]?.total || 0;
+
+    // --- This week's stats (last 7 days) ---
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const weekFilter = { user: userId, date: { $gte: weekAgo } };
+    const weekSessions = await Session.countDocuments(weekFilter);
+    const weekDurationAgg = await Session.aggregate([
+      { $match: weekFilter },
+      { $group: { _id: null, total: { $sum: '$duration' } } }
+    ]);
+    const weekTime = weekDurationAgg[0]?.total || 0;
 
     const stats = {
       totalSessions,
-      totalDuration: totalDuration[0]?.total || 0,
-      averageDuration: totalSessions > 0 ? (totalDuration[0]?.total || 0) / totalSessions : 0
+      totalDuration,
+      averageDuration,
+      todayTime,
+      todaySessions,
+      weekTime,
+      weekSessions
     };
 
     res.json(stats);
