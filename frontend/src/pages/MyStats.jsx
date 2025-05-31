@@ -199,44 +199,6 @@ function MyStats() {
             </div>
           </div>
         </div>
-
-        {/* Recent Sessions */}
-        <div className={commonStyles.card}>
-          <h2 className={`${commonStyles.heading.h3} mb-6`}>
-            Recent Sessions
-          </h2>
-          <div className="space-y-4">
-            {recentSessions.length === 0 ? (
-              <div className="text-center text-gray-400">No sessions yet. Start logging to see your stats grow!</div>
-            ) : (
-              recentSessions.map((session) => (
-                <div
-                  key={session._id}
-                  className="bg-gray-800/50 p-4 rounded-xl border border-gray-700 hover:border-primary/30 transition-all duration-300"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-lg font-medium">
-                        {new Date(session.date).toLocaleDateString()}
-                      </p>
-                      {session.notes && (
-                        <p className="text-sm text-gray-400 mt-1">
-                          {session.notes}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-primary">
-                        {session.duration ? session.duration.toFixed(2) : '0.00'}
-                      </p>
-                      <p className="text-sm text-gray-400">minutes</p>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
       </div>
     </div>
   );
