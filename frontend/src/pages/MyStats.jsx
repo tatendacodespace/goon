@@ -3,66 +3,19 @@ import { sessions } from '../services/api';
 import { commonStyles } from '../styles/theme';
 import { useNavigate } from 'react-router-dom';
 
-// Cache configuration
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 1000; // 1 second
-
 function MyStats() {
   const [stats, setStats] = useState(null);
-  const [recentSessions, setRecentSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [lastFetchTime, setLastFetchTime] = useState(0);
-  const [isFetching, setIsFetching] = useState(false);
   const navigate = useNavigate();
 
-  // Memoized fetch function with retry logic
-  const fetchStats = useCallback(async (retryCount = 0) => {
-    if (isFetching) return;
-    let timeoutId;
-    const now = new Date(); // <-- Fix: define now here
+  // Fast fetch using summary stats endpoint
+  const fetchStats = useCallback(async () => {
+    setLoading(true);
+    setError('');
     try {
-      setIsFetching(true);
-      setError('');
-      // Timeout after 10 seconds
-      const timeoutPromise = new Promise((_, reject) => {
-        timeoutId = setTimeout(() => reject(new Error('Request timed out. Please try again.')), 10000);
-      });
-      // Get all sessions data (ignore backend stats)
-      const sessionsData = await Promise.race([
-        sessions.getAll(),
-        timeoutPromise
-      ]);
-      // Process the data
-      const processedStats = {
-        totalTime: 0,
-        sessionCount: 0,
-        averageDuration: 0,
-        todayTime: 0,
-        todaySessions: 0,
-        weekTime: 0,
-        weekSessions: 0
-      };
-      // Calculate today's and this week's stats
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const weekStart = new Date(today);
-      weekStart.setDate(today.getDate() - today.getDay());
-      // Filter for today and week
-      const todaySessions = sessionsData.filter(session => new Date(session.date) >= today);
-      const weekSessions = sessionsData.filter(session => new Date(session.date) >= weekStart);
-      processedStats.todayTime = todaySessions.reduce((sum, s) => sum + s.duration, 0);
-      processedStats.todaySessions = todaySessions.length;
-      processedStats.weekTime = weekSessions.reduce((sum, s) => sum + s.duration, 0);
-      processedStats.weekSessions = weekSessions.length;
-      // All time
-      processedStats.totalTime = sessionsData.reduce((sum, s) => sum + s.duration, 0);
-      processedStats.sessionCount = sessionsData.length;
-      processedStats.averageDuration = processedStats.sessionCount > 0 ? processedStats.totalTime / processedStats.sessionCount : 0;
-      setStats(processedStats);
-      setRecentSessions(sessionsData.slice(0, 5));
-      setLastFetchTime(now.getTime());
+      const summary = await sessions.getStats('all');
+      setStats(summary);
     } catch (err) {
       if (err.message && (err.message.includes('401') || err.message.includes('403') || err.message.toLowerCase().includes('unauthorized'))) {
         setError('Session expired. Please log in again.');
@@ -71,33 +24,13 @@ function MyStats() {
       }
       setError(err.message || 'Failed to load statistics. Please try again later.');
     } finally {
-      clearTimeout(timeoutId);
-      setIsFetching(false);
       setLoading(false);
     }
-  }, [isFetching, lastFetchTime, stats, navigate]);
+  }, [navigate]);
 
   // Initial fetch
   useEffect(() => {
     fetchStats();
-  }, [fetchStats]);
-
-  // Refetch immediately if navigated from LogSession
-  useEffect(() => {
-    if (window.history.state && window.history.state.usr && window.history.state.usr.sessionLogged) {
-      fetchStats();
-      // Remove the flag so it doesn't refetch again on next mount
-      window.history.replaceState({ ...window.history.state, usr: { ...window.history.state.usr, sessionLogged: false } }, '');
-    }
-  }, [fetchStats]);
-
-  // Auto-refresh every 10 seconds for live updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchStats();
-    }, 10000);
-
-    return () => clearInterval(interval);
   }, [fetchStats]);
 
   const getStatEmoji = (stat) => {
